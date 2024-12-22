@@ -11,7 +11,7 @@ Although it is limited only to Kubernetes resources it makes it very easy to use
 `Glue` is the heart of the operator. Note that `GlueOperator` controller just creates a new `Glue` with a related resource, 
 for each parent custom resource. `Glue` defines `childResources` (sometimes referred to as managed resources) and `related resources`:
 
-### Child Resources
+### Child resources
 
 #### Attributes
 
