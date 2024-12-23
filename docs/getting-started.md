@@ -9,7 +9,7 @@ Start a local Kubernetes cluster using for example [Minikube](https://minikube.s
 Apply the CustomResourceDefinitions:
 
 ```bash
-kubectl apply -f https://github.com/java-operator-sdk/kubernetes-glue-operator/releases/latest/download/glues.io.java-operator-sdk.operator.glue-v1.yml -f https://github.com/java-operator-sdk/kubernetes-glue-operator/releases/latest/download/glueoperators.io.java-operator-sdk.operator.glue-v1.yml
+kubectl apply -f https://github.com/java-operator-sdk/kubernetes-glue-operator/releases/latest/download/glues.io.javaoperatorsdk.operator.glue-v1.yml -f https://github.com/java-operator-sdk/kubernetes-glue-operator/releases/latest/download/glueoperators.io.java-operator-sdk.operator.glue-v1.yml
 ```
 
 Deploy the `kubernetes-glue-operator`:
