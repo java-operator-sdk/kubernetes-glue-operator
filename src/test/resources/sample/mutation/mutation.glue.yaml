@@ -1,4 +1,4 @@
-apiVersion: io.csviri.operator.glue/v1beta1
+apiVersion: io.javaoperatorsdk.operator.glue/v1beta1
 kind: Glue
 metadata:
   name: mutation-webhook-deployment
@@ -56,7 +56,7 @@ spec:
                         secretKeyRef:
                           key: password
                           name: pkcs12-pass
-                  image: ghcr.io/csviri/sample-pod-mutating-webhook:0.1.0
+                  image: ghcr.io/java-operator-sdk/sample-pod-mutating-webhook:0.1.0
                   imagePullPolicy: IfNotPresent
                   name: pod-mutating-hook
                   ports:
