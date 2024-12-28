@@ -15,11 +15,11 @@
     <maven.compiler.target>${java.version}</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <surefire-plugin.version>3.3.1</surefire-plugin.version>
-    <fabric8-client.version>6.13.1</fabric8-client.version>
-    <quarkus.version>3.8.3</quarkus.version>
+    <fabric8-client.version>6.13.4</fabric8-client.version>
+    <quarkus.version>3.17.4</quarkus.version>
     <graalvm.version>24.0.1</graalvm.version>
     <mokito.version>5.11.0</mokito.version>
-    <qosdk.version>6.6.8</qosdk.version>
+    <qosdk.version>6.9.1</qosdk.version>
     <assertj.version>3.25.3</assertj.version>
     <spotless.version>2.43.0</spotless.version>
   </properties>
