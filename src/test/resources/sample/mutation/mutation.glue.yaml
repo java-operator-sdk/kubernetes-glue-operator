@@ -56,7 +56,7 @@ spec:
                         secretKeyRef:
                           key: password
                           name: pkcs12-pass
-                  image: ghcr.io/java-operator-sdk/sample-pod-mutating-webhook:0.1.0
+                  image: ghcr.io/csviri/sample-pod-mutating-webhook:0.1.0
                   imagePullPolicy: IfNotPresent
                   name: pod-mutating-hook
                   ports:
