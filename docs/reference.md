@@ -6,7 +6,7 @@ of [Java Operator SDK](https://github.com/operator-framework/java-operator-sdk) 
 Although it is limited only to Kubernetes resources it makes it very easy to use in language-independent 
 (DependentResources in JOSDK are also covering external resources) way. 
 
-## [Glue resource](https://github.com/csviri/kubernetes-glue-operator/releases/latest/download/glues.glue-v1.yml)
+## [Glue resource](https://github.com/java-operator-sdk/kubernetes-glue-operator/releases/latest/download/glues.glue-v1.yml)
 
 `Glue` is the heart of the operator. Note that `GlueOperator` controller just creates a new `Glue` with a related resource, 
 for each parent custom resource. `Glue` defines `childResources` (sometimes referred to as managed resources) and `related resources`:
@@ -40,16 +40,16 @@ It has several attributes:
 
 At the moment there are two types of built-in conditions provided:
 
-- **`ReadyCondition`** - check if a resource is up and running. Use it only as a `readyPostCondition`. See sample usage [here](https://github.com/csviri/kubernetes-glue-operator/blob/main/src/test/resources/sample/mutation/mutation.glue.yaml#L24-L25).
+- **`ReadyCondition`** - check if a resource is up and running. Use it only as a `readyPostCondition`. See sample usage [here](https://github.com/java-operator-sdk/kubernetes-glue-operator/blob/main/src/test/resources/sample/mutation/mutation.glue.yaml#L24-L25).
 - **`JSCondition`** - a generic condition, that allows writing conditions in JavaScript. As input, all the resources are available which
   are either child or related. The script should return a boolean value.
-  See accessing the related resource in [WebPage sample](https://github.com/csviri/kubernetes-glue-operator/blob/main/src/test/resources/sample/webpage/webpage.operator.yaml#L62-L64),
-  and cross-referencing resources [here](https://github.com/csviri/kubernetes-glue-operator/blob/main/src/test/resources/glue/TwoResourcesAndCondition.yaml#L23-L28).
+  See accessing the related resource in [WebPage sample](https://github.com/java-operator-sdk/kubernetes-glue-operator/blob/main/src/test/resources/sample/webpage/webpage.operator.yaml#L62-L64),
+  and cross-referencing resources [here](https://github.com/java-operator-sdk/kubernetes-glue-operator/blob/main/src/test/resources/glue/TwoResourcesAndCondition.yaml#L23-L28).
 
 ### Related resources
 
 Related resources are resources that are not reconciled (not created, updated, or deleted) during reconciliation, but serve as an input for it.
-See sample usage within `Glue` [here](https://github.com/csviri/kubernetes-glue-operator/blob/main/src/test/resources/glue/RelatedResourceSimpleWithCondition.yaml)
+See sample usage within `Glue` [here](https://github.com/java-operator-sdk/kubernetes-glue-operator/blob/main/src/test/resources/glue/RelatedResourceSimpleWithCondition.yaml)
 The following attributes can be defined for a related resource:
 
 - **`name`** - same as for child resource, unique identifier, used to reference the resource.
@@ -63,15 +63,15 @@ The following attributes can be defined for a related resource:
 Both in `JSCondition` and resource templates other resources can be referenced by the name. 
 
 If there are more `resourceNames` specified for a related resource, the resource is referenced in a form
-`[related resource name]#[resource name]`. See sample [here](https://github.com/csviri/kubernetes-glue-operator/blob/main/src/test/resources/glue/MultiNameRelatedResource.yaml).
+`[related resource name]#[resource name]`. See sample [here](https://github.com/java-operator-sdk/kubernetes-glue-operator/blob/main/src/test/resources/glue/MultiNameRelatedResource.yaml).
 
 When a resource `B` references another resource `A`, resource `A` will be guaranteed to be in the cache - especially for initial reconciliation when the resource is created -
 only if `B` depends on `A` on it. This is natural, in other words, after reconciliation up-to-date version of the resource is guaranteed to be in the cache after reconciliation.
-See sample resource cross-referencing [here](https://github.com/csviri/kubernetes-glue-operator/blob/main/src/test/resources/glue/CrossReferenceResource.yaml).
+See sample resource cross-referencing [here](https://github.com/java-operator-sdk/kubernetes-glue-operator/blob/main/src/test/resources/glue/CrossReferenceResource.yaml).
 
-The metadata of `Glue` can be referenced under `glueMetadata`, see sample [here](https://github.com/csviri/kubernetes-glue-operator/blob/main/src/test/resources/glue/TemplateForConcurrency.yaml#L12-L12)
+The metadata of `Glue` can be referenced under `glueMetadata`, see sample [here](https://github.com/java-operator-sdk/kubernetes-glue-operator/blob/main/src/test/resources/glue/TemplateForConcurrency.yaml#L12-L12)
 
-In addition to that in `GlueOperator` the **`parent`** attribute can be used to reference the parent resource on which behalf the resources are created. See sample [here](https://github.com/csviri/kubernetes-glue-operator/blob/main/src/test/resources/glueoperator/Templating.yaml).
+In addition to that in `GlueOperator` the **`parent`** attribute can be used to reference the parent resource on which behalf the resources are created. See sample [here](https://github.com/java-operator-sdk/kubernetes-glue-operator/blob/main/src/test/resources/glueoperator/Templating.yaml).
 
 ### Reconciliation notes
 
@@ -82,7 +82,7 @@ for a resource that depends on it.
 
 The `DependentResource` implementation of JOSDK makes all kinds of optimizations on the reconciliation which are utilized (or will be also here). 
 
-## [GlueOperator resource](https://github.com/csviri/kubernetes-glue-operator/releases/latest/download/glueoperators.glue-v1.yml)
+## [GlueOperator resource](https://github.com/java-operator-sdk/kubernetes-glue-operator/releases/latest/download/glueoperators.glue-v1.yml)
 
 The specs of `GlueOperator` are almost identical to `Glue`, it just adds some additional attributes: 
  
@@ -94,9 +94,9 @@ The specs of `GlueOperator` are almost identical to `Glue`, it just adds some ad
  - **`glueMetadata`** - optionally, you can customize the `Glue` resource created for each parent resource. 
     This is especially important when the parent is a cluster scoped resource - in that case it is mandatory to set. 
     Using this you can specify the **`name`** and **`namespace`** of the created `Glue`.
-    See usage on the sample [secret-copy-operator](https://github.com/csviri/kubernetes-glue-operator/blob/main/src/test/resources/sample/secretcopy/secret-copy.operator.yaml#L10-L12). 
+    See usage on the sample [secret-copy-operator](https://github.com/java-operator-sdk/kubernetes-glue-operator/blob/main/src/test/resources/sample/secretcopy/secret-copy.operator.yaml#L10-L12). 
 
-See minimal `GlueOperator` [here](https://github.com/csviri/kubernetes-glue-operator/blob/main/src/test/resources/glueoperator/SimpleGlueOperator.yaml).
+See minimal `GlueOperator` [here](https://github.com/java-operator-sdk/kubernetes-glue-operator/blob/main/src/test/resources/glueoperator/SimpleGlueOperator.yaml).
 
 ## Deployment
 
@@ -105,7 +105,7 @@ the default [configuration options](https://docs.quarkiverse.io/quarkus-operator
 defined by QOSDK can be overridden using environment variables.
 
 With every release, there are Kubernetes resources provided to make an initial deployment very simple.
-See `kubernetes.yml` in [release assets](https://github.com/csviri/kubernetes-glue-operator/releases).
+See `kubernetes.yml` in [release assets](https://github.com/java-operator-sdk/kubernetes-glue-operator/releases).
 While we will provide more options, users are encouraged to enhance/adjust this for their purposes.
 
 Since the project is a meta-controller, it needs to have access rights to all the resources it manages. 
@@ -144,7 +144,7 @@ custom resource tracked, so if there is a label selector defined for `Glue` it n
 to the `Glue` resource when it is created. Since it is not trivial to parse label selectors, in more 
 complex forms of label selectors (other the ones mentioned above), the labels to add to the `Glue` resources
 by a `GlueOperator` needs to be specified explicitly using 
-[`glue.operator.glue-operator-managed-glue-label`](https://github.com/csviri/kubernetes-glue-operator/blob/main/src/main/java/io/csviri/operator/glue/ControllerConfig.java#L10-L10) 
+[`glue.operator.glue-operator-managed-glue-label`](https://github.com/java-operator-sdk/kubernetes-glue-operator/blob/main/src/main/java/io/java-operator-sdk/operator/glue/ControllerConfig.java#L10-L10) 
 config key (which is a type of map). Therefore, for a label selector that specified two values for a glue:
 
 `quarkus.operator-sdk.controllers.glue.selector=mylabel1=value1,mylabel2=value2`
@@ -156,7 +156,7 @@ you need to add the following configuration params:
 `glue.operator.glue-operator-managed-glue-label.mylabel2=value2`
 
 This will ensure that the labels are added correctly to the `Glue`. See the related 
-[integration test](https://github.com/csviri/kubernetes-glue-operator/blob/main/src/test/java/io/csviri/operator/glue/GlueOperatorComplexLabelSelectorTest.java#L23-L23).
+[integration test](https://github.com/java-operator-sdk/kubernetes-glue-operator/blob/main/src/test/java/io/java-operator-sdk/operator/glue/GlueOperatorComplexLabelSelectorTest.java#L23-L23).
 
 ### Label selectors managed resources
 
@@ -185,12 +185,12 @@ be continuously improved in the follow-up releases.
 
 ## Samples
 
-1. [WebPage](https://github.com/csviri/kubernetes-glue-operator/tree/main/src/test/resources/sample/webpage) `GlueOperator`, serves a static website from the cluster.
+1. [WebPage](https://github.com/java-operator-sdk/kubernetes-glue-operator/tree/main/src/test/resources/sample/webpage) `GlueOperator`, serves a static website from the cluster.
    To achieve this, it creates three resources a `Deployment` running Nginx, a `ConfigMap` that contains the HTML file an mounted to nginx, a `Service` and an optional `Ingress`
    to expose the static web page.
-3. [Muatation Hook Deployment](https://github.com/csviri/kubernetes-glue-operator/tree/main/src/test/resources/sample/mutation), described on the project home page.
-4. [Additional `Glue` samples](https://github.com/csviri/kubernetes-glue-operator/tree/main/src/test/resources/glue), note that these are used for integration testing.
-5. [Additional `GlueOperator` samples](https://github.com/csviri/kubernetes-glue-operator/tree/main/src/test/resources/glueoperator), also used for integration testing.
+3. [Muatation Hook Deployment](https://github.com/java-operator-sdk/kubernetes-glue-operator/tree/main/src/test/resources/sample/mutation), described on the project home page.
+4. [Additional `Glue` samples](https://github.com/java-operator-sdk/kubernetes-glue-operator/tree/main/src/test/resources/glue), note that these are used for integration testing.
+5. [Additional `GlueOperator` samples](https://github.com/java-operator-sdk/kubernetes-glue-operator/tree/main/src/test/resources/glueoperator), also used for integration testing.
 
 ## Related documents
 

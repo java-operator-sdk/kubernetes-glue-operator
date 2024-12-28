@@ -26,7 +26,7 @@ Either in the discussion section here on GitHub or at [Kubernetes Slack Operator
 The project introduces two Kubernetes custom resources `Glue` and `GlueOperator`.
 You can use `GlueOperator` to define your own operator.
 Let's take a look at an example, where we define an operator for WebPage custom resource, that represents a static website served from the Cluster. (You can see the
-[full example here](https://github.com/csviri/kubernetes-glue-operator/blob/main/src/test/resources/sample/webpage))
+[full example here](https://github.com/java-operator-sdk/kubernetes-glue-operator/blob/main/src/test/resources/sample/webpage))
 
 ```yaml
 
@@ -48,12 +48,12 @@ spec:
 ```
 
 To create an operator (or more precisely the controller part) with `kubernetes-glue-operator` we have first apply
-the [CRD for WebPage](https://github.com/csviri/kubernetes-glue-operator/blob/main/src/test/resources/sample/webpage/webpage.crd.yml).
+the [CRD for WebPage](https://github.com/java-operator-sdk/kubernetes-glue-operator/blob/main/src/test/resources/sample/webpage/webpage.crd.yml).
 To define how the `WebPage` should be reconciled, thus what resources should be created for
 a `WebPage`, we prepare a `GlueOperator`:
 
 ```yaml
-apiVersion: io.csviri.operator.glue/v1beta1
+apiVersion: io.javaoperatorsdk.operator.glue/v1beta1
 kind: GlueOperator
 metadata:
   name: webpage-operator
@@ -128,11 +128,11 @@ resources are applied, however, there are certain cases when this is needed also
 The following example shows how to deploy a [dynamic admission controller](https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/) that mutates 
 all the `Pods`, adding annotation on them. Note that this is a tricky situation since the endpoint for the `MutatingWebhookConfiguration` is also a `Pod`, thus 'Pods' should be 
 first up and running before the configuration is applied, otherwise, the mutation webhook will block the changes on the pods, which would render the cluster unable to manage `Pods'.
-(Irrelevant details are omitted, see the full version [here](https://github.com/csviri/kubernetes-glue-operator/blob/main/src/test/resources/sample/mutation/mutation.glue.yaml), 
-see the full E2E test [here](https://github.com/csviri/kubernetes-glue-operator/blob/main/src/test/java/io/csviri/operator/glue/sample/mutation/MutationWebhookDeploymentE2E.java))
+(Irrelevant details are omitted, see the full version [here](https://github.com/java-operator-sdk/kubernetes-glue-operator/blob/main/src/test/resources/sample/mutation/mutation.glue.yaml), 
+see the full E2E test [here](https://github.com/java-operator-sdk/kubernetes-glue-operator/blob/main/src/test/java/io/java-operator-sdk/operator/glue/sample/mutation/MutationWebhookDeploymentE2E.java))
 
 ```yaml
-apiVersion: io.csviri.operator.glue/v1beta1
+apiVersion: io.javaoperatorsdk.operator.glue/v1beta1
 kind: Glue
 metadata:
   name: mutation-webhook-deployment
@@ -161,7 +161,7 @@ spec:
           template:            
             spec:
               containers:              
-                  image: ghcr.io/csviri/sample-pod-mutating-webhook:0.1.0                  
+                  image: ghcr.io/javaoperatorsdk/sample-pod-mutating-webhook:0.1.0                  
                   name: pod-mutating-hook
                   ports:
                     - containerPort: 443

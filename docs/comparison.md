@@ -37,7 +37,7 @@ As mentioned before there are solutions that are comparable to ours, and all of 
   
   In summary *metacontroller* is a bit more generic solution this moment,
   but with additional complexity to manage, and much harder to start with.
-  The main practical difference is in supporting ["bulk resources"](https://github.com/csviri/kubernetes-glue-operator/issues/75)
+  The main practical difference is in supporting ["bulk resources"](https://github.com/java-operator-sdk/kubernetes-glue-operator/issues/75)
   we will also support it in future versions.
 
 - [Helm Operators](https://sdk.operatorframework.io/docs/building-operators/helm/tutorial/) - are a very efficient

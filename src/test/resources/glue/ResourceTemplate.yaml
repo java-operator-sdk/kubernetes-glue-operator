@@ -1,4 +1,4 @@
-apiVersion: io.csviri.operator.glue/v1beta1
+apiVersion: io.javaoperatorsdk.operator.glue/v1beta1
 kind: Glue
 metadata:
   name: resource-templating-sample
