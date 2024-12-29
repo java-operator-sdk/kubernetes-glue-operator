@@ -12,6 +12,7 @@ public class GlueOperatorSpec extends GlueSpec {
 
   private GlueMetadata glueMetadata;
 
+
   public Parent getParent() {
     return parent;
   }

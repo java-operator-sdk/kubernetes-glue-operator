@@ -8,6 +8,8 @@ import java.util.stream.IntStream;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
@@ -19,8 +21,6 @@ import io.javaoperatorsdk.operator.glue.customresource.glue.DependentResourceSpe
 import io.javaoperatorsdk.operator.glue.customresource.glue.Glue;
 import io.javaoperatorsdk.operator.glue.reconciler.ValidationAndErrorHandler;
 import io.quarkus.test.junit.QuarkusTest;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
@@ -328,12 +328,12 @@ class GlueTest extends TestBase {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"PatchRelatedStatus.yaml","PatchRelatedStatusWithTemplate.yaml"})
+  @ValueSource(strings = {"PatchRelatedStatus.yaml", "PatchRelatedStatusWithTemplate.yaml"})
   void pathRelatedResourceStatus(String glueFileName) {
     TestUtils.applyTestCrd(client, TestCustomResource.class);
 
     var customResource = create(TestData.testCustomResource());
-    var glue = createGlue("/glue/"+glueFileName);
+    var glue = createGlue("/glue/" + glueFileName);
 
     await().untilAsserted(() -> {
       var cm = get(ConfigMap.class, "configmap1");
