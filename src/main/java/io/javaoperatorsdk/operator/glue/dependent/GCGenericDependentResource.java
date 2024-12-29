@@ -10,12 +10,12 @@ public class GCGenericDependentResource extends GenericDependentResource
 
   public GCGenericDependentResource(GenericTemplateHandler genericTemplateHandler,
       GenericKubernetesResource desired, String name,
-      boolean clusterScoped) {
-    super(genericTemplateHandler, desired, name, clusterScoped);
+      boolean clusterScoped, boolean useSSAMatcher) {
+    super(genericTemplateHandler, desired, name, clusterScoped, useSSAMatcher);
   }
 
   public GCGenericDependentResource(GenericTemplateHandler genericTemplateHandler,
-      String desiredTemplate, String name, boolean clusterScoped) {
-    super(genericTemplateHandler, desiredTemplate, name, clusterScoped);
+      String desiredTemplate, String name, boolean clusterScoped, boolean useSSAMatcher) {
+    super(genericTemplateHandler, desiredTemplate, name, clusterScoped, useSSAMatcher);
   }
 }

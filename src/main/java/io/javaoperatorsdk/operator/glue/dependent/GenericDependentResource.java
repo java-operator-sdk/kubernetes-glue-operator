@@ -23,15 +23,17 @@ public class GenericDependentResource
   private final String desiredTemplate;
   private final String name;
   private final boolean clusterScoped;
+  private final boolean useSSAMatcher;
 
   // optimize share between instances
   private final GenericTemplateHandler genericTemplateHandler;
 
   public GenericDependentResource(GenericTemplateHandler genericTemplateHandler,
       GenericKubernetesResource desired, String name,
-      boolean clusterScoped) {
+      boolean clusterScoped, boolean useSSAMatcher) {
     super(new GroupVersionKind(desired.getApiVersion(), desired.getKind()));
     this.desired = desired;
+    this.useSSAMatcher = useSSAMatcher;
     this.desiredTemplate = null;
     this.name = name;
     this.clusterScoped = clusterScoped;
@@ -39,12 +41,13 @@ public class GenericDependentResource
   }
 
   public GenericDependentResource(GenericTemplateHandler genericTemplateHandler,
-      String desiredTemplate, String name, boolean clusterScoped) {
+      String desiredTemplate, String name, boolean clusterScoped, boolean useSSAMatcher) {
     super(new GroupVersionKind(Utils.getApiVersionFromTemplate(desiredTemplate),
         Utils.getKindFromTemplate(desiredTemplate)));
     this.genericTemplateHandler = genericTemplateHandler;
     this.name = name;
     this.desiredTemplate = desiredTemplate;
+    this.useSSAMatcher = useSSAMatcher;
     this.desired = null;
     this.clusterScoped = clusterScoped;
   }
@@ -75,6 +78,10 @@ public class GenericDependentResource
         && actualResource.getApiVersion().equals("apps/v1")) {
       return super.match(actualResource, primary, context);
     }
-    return Result.nonComputed(false);
+    if (useSSAMatcher) {
+      return super.match(actualResource, primary, context);
+    } else {
+      return Result.nonComputed(false);
+    }
   }
 }
