@@ -3,6 +3,7 @@ package io.javaoperatorsdk.operator.glue.customresource.glue;
 import java.util.List;
 import java.util.Objects;
 
+import io.fabric8.crd.generator.annotation.PreserveUnknownFields;
 import io.fabric8.generator.annotation.Required;
 
 public class RelatedResourceSpec {
@@ -19,6 +20,9 @@ public class RelatedResourceSpec {
   private boolean clusterScoped = Boolean.FALSE;
   private List<String> resourceNames;
 
+  @PreserveUnknownFields
+  private Object statusPatch;
+  private String statusPatchTemplate;
 
   public String getApiVersion() {
     return apiVersion;
@@ -73,14 +77,16 @@ public class RelatedResourceSpec {
       return false;
     RelatedResourceSpec that = (RelatedResourceSpec) o;
     return clusterScoped == that.clusterScoped && Objects.equals(name, that.name)
-        && Objects.equals(apiVersion, that.apiVersion) && Objects.equals(kind, that.kind)
-        && Objects.equals(namespace, that.namespace)
-        && Objects.equals(resourceNames, that.resourceNames);
+        && Objects.equals(namespace, that.namespace) && Objects.equals(apiVersion, that.apiVersion)
+        && Objects.equals(kind, that.kind) && Objects.equals(resourceNames, that.resourceNames)
+        && Objects.equals(statusPatch, that.statusPatch)
+        && Objects.equals(statusPatchTemplate, that.statusPatchTemplate);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(name, apiVersion, kind, clusterScoped, namespace, resourceNames);
+    return Objects.hash(name, namespace, apiVersion, kind, clusterScoped, resourceNames,
+        statusPatch, statusPatchTemplate);
   }
 
   public boolean isClusterScoped() {
@@ -89,5 +95,21 @@ public class RelatedResourceSpec {
 
   public void setClusterScoped(boolean clusterScoped) {
     this.clusterScoped = clusterScoped;
+  }
+
+  public Object getStatusPatch() {
+    return statusPatch;
+  }
+
+  public void setStatusPatch(Object statusPatch) {
+    this.statusPatch = statusPatch;
+  }
+
+  public String getStatusPatchTemplate() {
+    return statusPatchTemplate;
+  }
+
+  public void setStatusPatchTemplate(String statusPatchTemplate) {
+    this.statusPatchTemplate = statusPatchTemplate;
   }
 }

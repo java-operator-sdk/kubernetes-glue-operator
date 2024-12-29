@@ -10,6 +10,7 @@ import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.dsl.base.PatchContext;
 import io.fabric8.kubernetes.client.dsl.base.PatchType;
+import io.fabric8.kubernetes.client.utils.Serialization;
 import io.javaoperatorsdk.operator.api.reconciler.*;
 import io.javaoperatorsdk.operator.glue.Utils;
 import io.javaoperatorsdk.operator.glue.conditions.JavaScripCondition;
@@ -47,6 +48,7 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue>, ErrorSta
 
   private final ValidationAndErrorHandler validationAndErrorHandler;
   private final InformerRegister informerRegister;
+  private final GenericTemplateHandler templateHandler;
 
   private final KubernetesResourceDeletedCondition deletePostCondition =
       new KubernetesResourceDeletedCondition();
@@ -54,10 +56,11 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue>, ErrorSta
   private final GenericTemplateHandler genericTemplateHandler;
 
   public GlueReconciler(ValidationAndErrorHandler validationAndErrorHandler,
-      InformerRegister informerRegister,
+      InformerRegister informerRegister, GenericTemplateHandler templateHandler,
       GenericTemplateHandler genericTemplateHandler) {
     this.validationAndErrorHandler = validationAndErrorHandler;
     this.informerRegister = informerRegister;
+    this.templateHandler = templateHandler;
     this.genericTemplateHandler = genericTemplateHandler;
   }
 
@@ -89,6 +92,7 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue>, ErrorSta
     cleanupRemovedResourcesFromWorkflow(context, primary);
     informerRegister.deRegisterInformerOnResourceFlowChange(context, primary);
     result.throwAggregateExceptionIfErrorsPresent();
+    patchRelatedResourcesStatus(context, primary);
     return UpdateControl.noUpdate();
   }
 
@@ -220,6 +224,35 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue>, ErrorSta
           : new GenericDependentResource(genericTemplateHandler,
               spec.getResource(), spec.getName(), spec.isClusterScoped());
     }
+  }
+
+  // todo add workflow result?
+  private void patchRelatedResourcesStatus(Context<Glue> context,
+      Glue primary) {
+
+    var targetRelatedResources = primary.getSpec().getRelatedResources().stream()
+        .filter(r -> r.getStatusPatch() != null || r.getStatusPatchTemplate() != null)
+        .toList();
+
+    if (!targetRelatedResources.isEmpty()) {
+      return;
+    }
+    var actualData = genericTemplateHandler.createDataWithResources(primary, context);
+
+    targetRelatedResources.forEach(r -> {
+      var relatedResources = Utils.getRelatedResources(primary, r, context);
+
+      var template = r.getStatusPatchTemplate() != null ? r.getStatusPatchTemplate()
+          : Serialization.asYaml(r.getStatusPatch());
+      var resultTemplate =
+          genericTemplateHandler.processTemplate(actualData, template);
+      var statusObjectMap = GenericTemplateHandler.parseTemplateToMapObject(resultTemplate);
+      relatedResources.forEach((n, kr) -> {
+        kr.setAdditionalProperty("status", statusObjectMap);
+        context.getClient().resource(kr).patchStatus();
+      });
+    });
+
   }
 
   @SuppressWarnings({"rawtypes"})

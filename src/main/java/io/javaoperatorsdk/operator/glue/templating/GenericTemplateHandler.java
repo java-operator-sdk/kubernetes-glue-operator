@@ -29,20 +29,26 @@ public class GenericTemplateHandler {
 
   public String processInputAndTemplate(Map<String, GenericKubernetesResource> data,
       String template) {
-    Map<String, Map<?, ?>> res = new HashMap<>();
-    data.forEach((key, value) -> res.put(key,
-        value == null ? null : objectMapper.convertValue(value, Map.class)));
+    Map<String, Map<?, ?>> res =
+        genericKubernetesResourceDataToGenericData(data);
     return processTemplate(res, template);
   }
 
   public String processTemplate(String template, Glue primary,
       Context<Glue> context) {
-
     var data = createDataWithResources(primary, context);
     return processTemplate(data, template);
   }
 
-  private static Map<String, Map<?, ?>> createDataWithResources(Glue primary,
+  private static Map<String, Map<?, ?>> genericKubernetesResourceDataToGenericData(
+      Map<String, GenericKubernetesResource> data) {
+    Map<String, Map<?, ?>> res = new HashMap<>();
+    data.forEach((key, value) -> res.put(key,
+        value == null ? null : objectMapper.convertValue(value, Map.class)));
+    return res;
+  }
+
+  public static Map<String, Map<?, ?>> createDataWithResources(Glue primary,
       Context<Glue> context) {
     Map<String, Map<?, ?>> res = new HashMap<>();
     var actualResourcesByName = Utils.getActualResourcesByNameInWorkflow(context, primary);
@@ -55,4 +61,11 @@ public class GenericTemplateHandler {
 
     return res;
   }
+
+  // todo unit test
+  @SuppressWarnings("unchecked")
+  public static Map<String, ?> parseTemplateToMapObject(String template) {
+    return objectMapper.convertValue(template, Map.class);
+  }
+
 }
