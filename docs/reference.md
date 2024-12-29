@@ -8,7 +8,8 @@ Although it is limited only to Kubernetes resources it makes it very easy to use
 
 ## Generic Notes
 
-- All templates (both object and string based) uses [Qute templating engine](https://quarkus.io/guides/qute-reference).
+- All templates (both object and string based) uses [Qute templating engine](https://quarkus.io/guides/qute-reference). While objects allow only
+  placeholders, you can use the full power of qute in string templates.
 
 ## [Glue resource](https://github.com/java-operator-sdk/kubernetes-glue-operator/releases/latest/download/glues.glue-v1.yml)
 
