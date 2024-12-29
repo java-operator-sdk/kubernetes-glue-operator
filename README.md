@@ -1,7 +1,7 @@
 # Kubernetes Glue Operator
 
 Kubernetes Glue Operator is a powerful Kubernetes **meta operator** that allows you to create other **operators in a declarative** way by **simply
-applying a custom resource**. 
+applying a custom resource**. (**Not** related to AWS Glue)
 
 It provides facilities to compose Kubernetes resources and describes how the resource
 should be reconciled. Supports conditional resources in runtime, and ordering of resource reconciliation.
