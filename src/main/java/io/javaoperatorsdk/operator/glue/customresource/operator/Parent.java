@@ -2,6 +2,8 @@ package io.javaoperatorsdk.operator.glue.customresource.operator;
 
 import java.util.Objects;
 
+import io.fabric8.crd.generator.annotation.PreserveUnknownFields;
+
 public class Parent {
 
   private String apiVersion;
@@ -9,6 +11,9 @@ public class Parent {
   private boolean clusterScoped = false;
   private String labelSelector;
 
+  @PreserveUnknownFields
+  private Object status;
+  private String statusTemplate;
 
   public Parent() {}
 
@@ -51,6 +56,22 @@ public class Parent {
     this.clusterScoped = clusterScoped;
   }
 
+  public Object getStatus() {
+    return status;
+  }
+
+  public void setStatus(Object status) {
+    this.status = status;
+  }
+
+  public String getStatusTemplate() {
+    return statusTemplate;
+  }
+
+  public void setStatusTemplate(String statusTemplate) {
+    this.statusTemplate = statusTemplate;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o)
@@ -59,11 +80,13 @@ public class Parent {
       return false;
     Parent parent = (Parent) o;
     return clusterScoped == parent.clusterScoped && Objects.equals(apiVersion, parent.apiVersion)
-        && Objects.equals(kind, parent.kind) && Objects.equals(labelSelector, parent.labelSelector);
+        && Objects.equals(kind, parent.kind) && Objects.equals(labelSelector, parent.labelSelector)
+        && Objects.equals(status, parent.status)
+        && Objects.equals(statusTemplate, parent.statusTemplate);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(apiVersion, kind, clusterScoped, labelSelector);
+    return Objects.hash(apiVersion, kind, clusterScoped, labelSelector, status, statusTemplate);
   }
 }

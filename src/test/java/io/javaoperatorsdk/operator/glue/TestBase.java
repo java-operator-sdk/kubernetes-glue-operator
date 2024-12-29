@@ -13,9 +13,11 @@ import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.dsl.NonDeletingOperation;
 import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
+import io.javaoperatorsdk.operator.glue.customresource.glue.Glue;
 
 import jakarta.inject.Inject;
 
+import static io.javaoperatorsdk.operator.glue.TestUtils.loadGlue;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
@@ -49,6 +51,10 @@ public class TestBase {
     return new NamespaceBuilder().withMetadata(new ObjectMetaBuilder()
         .withName(name)
         .build()).build();
+  }
+
+  protected Glue createGlue(String path) {
+    return create(loadGlue(path));
   }
 
   protected <T extends HasMetadata> T create(T resource) {

@@ -19,6 +19,7 @@ import io.javaoperatorsdk.operator.glue.customresource.glue.GlueSpec;
 import io.javaoperatorsdk.operator.glue.customresource.glue.RelatedResourceSpec;
 import io.javaoperatorsdk.operator.glue.customresource.operator.GlueOperator;
 import io.javaoperatorsdk.operator.glue.customresource.operator.GlueOperatorSpec;
+import io.javaoperatorsdk.operator.glue.customresource.operator.Parent;
 import io.javaoperatorsdk.operator.glue.customresource.operator.ResourceFlowOperatorStatus;
 import io.javaoperatorsdk.operator.glue.reconciler.ValidationAndErrorHandler;
 import io.javaoperatorsdk.operator.glue.reconciler.glue.GlueReconciler;
@@ -103,7 +104,6 @@ public class GlueOperatorReconciler
 
     ObjectMeta glueMetadata = glueMetadata(glueOperator, targetParentResource);
 
-
     glue.setMetadata(glueMetadata);
     glue.setSpec(toWorkflowSpec(glueOperator.getSpec()));
 
@@ -112,6 +112,16 @@ public class GlueOperatorReconciler
     }
 
     var parent = glueOperator.getSpec().getParent();
+    RelatedResourceSpec parentRelatedSpec =
+        parentRelatedResourceSpec(targetParentResource, glueOperator, parent);
+
+    glue.getSpec().getRelatedResources().add(parentRelatedSpec);
+    glue.addOwnerReference(targetParentResource);
+    return glue;
+  }
+
+  private static RelatedResourceSpec parentRelatedResourceSpec(
+      GenericKubernetesResource targetParentResource, GlueOperator glueOperator, Parent parent) {
     RelatedResourceSpec parentRelatedSpec = new RelatedResourceSpec();
     parentRelatedSpec.setName(PARENT_RELATED_RESOURCE_NAME);
     parentRelatedSpec.setApiVersion(parent.getApiVersion());
@@ -119,10 +129,10 @@ public class GlueOperatorReconciler
     parentRelatedSpec.setResourceNames(List.of(targetParentResource.getMetadata().getName()));
     parentRelatedSpec.setNamespace(targetParentResource.getMetadata().getNamespace());
     parentRelatedSpec.setClusterScoped(glueOperator.getSpec().getParent().isClusterScoped());
-
-    glue.getSpec().getRelatedResources().add(parentRelatedSpec);
-    glue.addOwnerReference(targetParentResource);
-    return glue;
+    parentRelatedSpec
+        .setStatusPatchTemplate(glueOperator.getSpec().getParent().getStatusTemplate());
+    parentRelatedSpec.setStatusPatch(glueOperator.getSpec().getParent().getStatus());
+    return parentRelatedSpec;
   }
 
   private ObjectMeta glueMetadata(GlueOperator glueOperator,

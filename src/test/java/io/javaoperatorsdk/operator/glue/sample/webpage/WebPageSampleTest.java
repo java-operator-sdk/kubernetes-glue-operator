@@ -53,9 +53,12 @@ public class WebPageSampleTest extends TestBase {
     await().untilAsserted(() -> {
       var ingress = get(Ingress.class, webPage.getMetadata().getName());
       var configMap = get(ConfigMap.class, webPage.getMetadata().getName());
+      var wp = get(WebPage.class, webPage.getMetadata().getName());
 
       assertThat(configMap.getData().get("index.html")).contains("Hello World 2!");
       assertThat(ingress).isNotNull();
+      assertThat(wp.getStatus()).isNotNull();
+      assertThat(wp.getStatus().getObservedGeneration()).isNotNull();
     });
 
     delete(webPage);

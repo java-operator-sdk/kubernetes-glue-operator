@@ -24,6 +24,9 @@ spec:
             type: object
           status:
             type: object
+            properties:
+              observedGeneration:
+                type: integer
         type: object
     served: true
     storage: true

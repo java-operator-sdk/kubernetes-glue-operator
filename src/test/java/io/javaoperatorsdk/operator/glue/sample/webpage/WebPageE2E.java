@@ -59,6 +59,9 @@ public class WebPageE2E {
       assertThat(ingress).isNotNull();
     });
 
+    var wp = client.resources(WebPage.class).withName("webpage1").get();
+    assertThat(wp.getStatus().getObservedGeneration()).isNotNull();
+
     client.resource(createdWebPage).delete();
 
     await().timeout(TestUtils.GC_WAIT_TIMEOUT).untilAsserted(() -> {
@@ -73,6 +76,7 @@ public class WebPageE2E {
       assertThat(configMap).isNull();
       assertThat(service).isNull();
       assertThat(ingress).isNull();
+
     });
   }
 

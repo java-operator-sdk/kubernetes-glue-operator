@@ -17,7 +17,9 @@ In other words, it also allows you to write **workflows** over resources in a **
 
 ## Contact Us
 
-Either in the discussion section here on GitHub or at [Kubernetes Slack Operator Channel](https://kubernetes.slack.com/archives/CAW0GV7A5).
+Either in the discussion section here on GitHub or at [Kubernetes Slack Operator Channel](https://kubernetes.slack.com/archives/CAW0GV7A5). While
+in "object" form only placeholder substitutions are possible, in string template you can use all the 
+features of qute.
 
 ## Quick Introduction
 
@@ -61,6 +63,8 @@ spec:
   parent:
     apiVersion: glueoperator.sample/v1  # watches all the custom resource of type WebPage
     kind: WebPage
+    statusTemplate: | # update the status of the custom resource at the end of reconciliation
+      observedGeneration: {parent.metadata.generation}
   childResources:
     - name: htmlconfigmap
       resource:

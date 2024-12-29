@@ -9,7 +9,8 @@ import io.fabric8.kubernetes.model.annotation.Version;
 @Group(TestCustomResource.CR_GROUP)
 @Version("v1")
 @ShortNames("tcr")
-public class TestCustomResource extends CustomResource<TestCustomResourceSpec, Void>
+public class TestCustomResource
+    extends CustomResource<TestCustomResourceSpec, TestCustomResourceStatus>
     implements Namespaced {
 
   public static final String CR_GROUP = "io.javaoperatorsdk.operator.glue";

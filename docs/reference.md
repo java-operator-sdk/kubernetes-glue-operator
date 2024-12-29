@@ -6,6 +6,10 @@ of [Java Operator SDK](https://github.com/operator-framework/java-operator-sdk) 
 Although it is limited only to Kubernetes resources it makes it very easy to use in language-independent 
 (DependentResources in JOSDK are also covering external resources) way. 
 
+## Generic Notes
+
+- All templates (both object and string based) uses [Qute templating engine](https://quarkus.io/guides/qute-reference).
+
 ## [Glue resource](https://github.com/java-operator-sdk/kubernetes-glue-operator/releases/latest/download/glues.glue-v1.yml)
 
 `Glue` is the heart of the operator. Note that `GlueOperator` controller just creates a new `Glue` with a related resource, 
@@ -57,6 +61,9 @@ The following attributes can be defined for a related resource:
 - **`apiVersion`** - Kubernetes resource API Version of the resource
 - **`kind`** - Kubernetes kind property of the resource
 - **`resourceNames`** - list of string of the resource names within the same namespace as `Glue`.  
+- **`statusPatch`** - template object used to update status of the related resource at the end of the reconciliation. See [sample](https://github.com/java-operator-sdk/kubernetes-glue-operator/blob/main/src/test/resources/glue/PatchRelatedStatus.yaml#L20-L21).
+    All the available resources (child, related) are provided.         
+- **`statusPatchTemplate`** - same as `statusPatch` just as a string template. See [sample](https://github.com/java-operator-sdk/kubernetes-glue-operator/blob/main/src/test/resources/glue/PatchRelatedStatusWithTemplate.yaml#L20-L21).
 
 ### Referencing other resources
 
@@ -91,6 +98,9 @@ The specs of `GlueOperator` are almost identical to `Glue`, it just adds some ad
    - **`apiVersion`** and **`kind`** - of the target custom resources.
    - **`labelSelector`** - optional label selector for the target resources.
    - **`clusterScoped`** - optional boolean value, if the parent resource is cluster scoped. Default is `false`.
+   - **`status`** - template object to update status of the related resource at the end of the reconciliation. 
+     All the available resources (parent, child, related) are available.
+   - **`statusTemplate`** - same as `status` just as a string template.
  - **`glueMetadata`** - optionally, you can customize the `Glue` resource created for each parent resource. 
     This is especially important when the parent is a cluster scoped resource - in that case it is mandatory to set. 
     Using this you can specify the **`name`** and **`namespace`** of the created `Glue`.
