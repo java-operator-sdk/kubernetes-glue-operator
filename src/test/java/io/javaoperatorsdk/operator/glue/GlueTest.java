@@ -19,6 +19,8 @@ import io.javaoperatorsdk.operator.glue.customresource.glue.DependentResourceSpe
 import io.javaoperatorsdk.operator.glue.customresource.glue.Glue;
 import io.javaoperatorsdk.operator.glue.reconciler.ValidationAndErrorHandler;
 import io.quarkus.test.junit.QuarkusTest;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
@@ -325,12 +327,13 @@ class GlueTest extends TestBase {
     });
   }
 
-  @Test
-  void pathRelatedResourceStatus() {
+  @ParameterizedTest
+  @ValueSource(strings = {"PatchRelatedStatus.yaml","PatchRelatedStatusWithTemplate.yaml"})
+  void pathRelatedResourceStatus(String glueFileName) {
     TestUtils.applyTestCrd(client, TestCustomResource.class);
 
     var customResource = create(TestData.testCustomResource());
-    var glue = createGlue("/glue/PatchRelatedStatus.yaml");
+    var glue = createGlue("/glue/"+glueFileName);
 
     await().untilAsserted(() -> {
       var cm = get(ConfigMap.class, "configmap1");
@@ -339,18 +342,17 @@ class GlueTest extends TestBase {
       assertThat(cr.getStatus()).isNotNull();
       assertThat(cr.getStatus().getValue()).isEqualTo(cm.getMetadata().getResourceVersion());
     });
-
     delete(glue);
-
     await().timeout(TestUtils.GC_WAIT_TIMEOUT).untilAsserted(() -> {
       var cm = get(ConfigMap.class, "configmap1");
       assertThat(cm).isNull();
     });
-
     delete(customResource);
+    await().untilAsserted(() -> {
+      var cr = get(TestCustomResource.class, "testcr1");
+      assertThat(cr).isNull();
+    });
   }
-
-
 
   private List<Glue> testWorkflowList(int num) {
     List<Glue> res = new ArrayList<>();
