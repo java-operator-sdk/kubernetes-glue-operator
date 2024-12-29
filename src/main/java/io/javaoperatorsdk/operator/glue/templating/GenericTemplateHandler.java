@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.fabric8.kubernetes.api.model.GenericKubernetesResource;
+import io.fabric8.kubernetes.client.utils.Serialization;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.glue.Utils;
 import io.javaoperatorsdk.operator.glue.customresource.glue.Glue;
@@ -62,10 +63,9 @@ public class GenericTemplateHandler {
     return res;
   }
 
-  // todo unit test
   @SuppressWarnings("unchecked")
   public static Map<String, ?> parseTemplateToMapObject(String template) {
-    return objectMapper.convertValue(template, Map.class);
+    return Serialization.unmarshal(template, Map.class);
   }
 
 }

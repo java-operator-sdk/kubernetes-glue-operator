@@ -1,0 +1,21 @@
+apiVersion: io.javaoperatorsdk.operator.glue/v1beta1
+kind: Glue
+metadata:
+  name: related-resource-status-patch
+spec:
+  childResources:
+    - name: configMap1
+      resource:
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: configmap1
+        data:
+          key: "value"
+  relatedResources:
+    - name: related
+      apiVersion: "io.javaoperatorsdk.operator.glue/v1"
+      kind: TestCustomResource
+      resourceNames: ["testcr1"]
+      statusPatch:
+        value: "{configMap1.metadata.resourceVersion}"

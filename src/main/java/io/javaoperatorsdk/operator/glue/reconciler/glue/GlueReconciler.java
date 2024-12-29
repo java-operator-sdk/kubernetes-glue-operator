@@ -48,7 +48,6 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue>, ErrorSta
 
   private final ValidationAndErrorHandler validationAndErrorHandler;
   private final InformerRegister informerRegister;
-  private final GenericTemplateHandler templateHandler;
 
   private final KubernetesResourceDeletedCondition deletePostCondition =
       new KubernetesResourceDeletedCondition();
@@ -56,11 +55,10 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue>, ErrorSta
   private final GenericTemplateHandler genericTemplateHandler;
 
   public GlueReconciler(ValidationAndErrorHandler validationAndErrorHandler,
-      InformerRegister informerRegister, GenericTemplateHandler templateHandler,
+      InformerRegister informerRegister,
       GenericTemplateHandler genericTemplateHandler) {
     this.validationAndErrorHandler = validationAndErrorHandler;
     this.informerRegister = informerRegister;
-    this.templateHandler = templateHandler;
     this.genericTemplateHandler = genericTemplateHandler;
   }
 
@@ -234,7 +232,7 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue>, ErrorSta
         .filter(r -> r.getStatusPatch() != null || r.getStatusPatchTemplate() != null)
         .toList();
 
-    if (!targetRelatedResources.isEmpty()) {
+    if (targetRelatedResources.isEmpty()) {
       return;
     }
     var actualData = genericTemplateHandler.createDataWithResources(primary, context);
