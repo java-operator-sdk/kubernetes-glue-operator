@@ -7,6 +7,8 @@ It provides facilities to compose Kubernetes resources and describes how the res
 should be reconciled. Supports conditional resources in runtime, and ordering of resource reconciliation.
 In other words, it also allows you to write **workflows** over resources in a **GitOps** friendly way. 
 
+The project is implemented as a thin layer on top of battle-tested [Workflow feature](https://javaoperatorsdk.io/docs/workflows/) of Java Operator SDK.
+
 ## Documentation
 
 [Getting Started](/docs/getting-started.md)
