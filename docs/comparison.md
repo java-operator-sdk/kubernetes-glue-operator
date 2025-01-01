@@ -47,3 +47,5 @@ As mentioned before there are solutions that are comparable to ours, and all of 
   than *kubernetes-glue-operator*.
 
 - [Crossplane Composition](https://docs.crossplane.io/latest/concepts/compositions/) TODO
+
+- [Kro](https://github.com/awslabs/kro) TODO
