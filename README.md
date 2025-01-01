@@ -17,6 +17,8 @@ The project is implemented as a thin layer on top of battle-tested [Workflow fea
 
 [Rational and Comparison with Similar Solutions](/docs/comparison.md)
 
+[Sample Index](/docs/sample-index.md)
+
 ## Contact Us
 
 Either in the discussion section here on GitHub or at [Kubernetes Slack Operator Channel](https://kubernetes.slack.com/archives/CAW0GV7A5). While
