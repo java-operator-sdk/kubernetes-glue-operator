@@ -9,4 +9,8 @@ See ALL `GlueOperator` integration test resources [here](https://github.com/java
 
 See additional samples [here](https://github.com/java-operator-sdk/kubernetes-glue-operator/blob/main/src/test/resources/sample).
 
+## Cherry-picked samples
+
+TODO
+
  
