@@ -6,6 +6,7 @@ import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.api.reconciler.dependent.Deleter;
 import io.javaoperatorsdk.operator.glue.Utils;
 import io.javaoperatorsdk.operator.glue.customresource.glue.Glue;
+import io.javaoperatorsdk.operator.glue.customresource.glue.Matcher;
 import io.javaoperatorsdk.operator.glue.reconciler.glue.GlueReconciler;
 import io.javaoperatorsdk.operator.glue.templating.GenericTemplateHandler;
 import io.javaoperatorsdk.operator.processing.GroupVersionKind;
@@ -23,17 +24,17 @@ public class GenericDependentResource
   private final String desiredTemplate;
   private final String name;
   private final boolean clusterScoped;
-  private final boolean useSSAMatcher;
+  private final Matcher matcher;
 
   // optimize share between instances
   private final GenericTemplateHandler genericTemplateHandler;
 
   public GenericDependentResource(GenericTemplateHandler genericTemplateHandler,
       GenericKubernetesResource desired, String name,
-      boolean clusterScoped, boolean useSSAMatcher) {
+      boolean clusterScoped, Matcher matcher) {
     super(new GroupVersionKind(desired.getApiVersion(), desired.getKind()));
     this.desired = desired;
-    this.useSSAMatcher = useSSAMatcher;
+    this.matcher = matcher;
     this.desiredTemplate = null;
     this.name = name;
     this.clusterScoped = clusterScoped;
@@ -41,13 +42,13 @@ public class GenericDependentResource
   }
 
   public GenericDependentResource(GenericTemplateHandler genericTemplateHandler,
-      String desiredTemplate, String name, boolean clusterScoped, boolean useSSAMatcher) {
+      String desiredTemplate, String name, boolean clusterScoped, Matcher matcher) {
     super(new GroupVersionKind(Utils.getApiVersionFromTemplate(desiredTemplate),
         Utils.getKindFromTemplate(desiredTemplate)));
     this.genericTemplateHandler = genericTemplateHandler;
     this.name = name;
     this.desiredTemplate = desiredTemplate;
-    this.useSSAMatcher = useSSAMatcher;
+    this.matcher = matcher;
     this.desired = null;
     this.clusterScoped = clusterScoped;
   }
@@ -78,7 +79,7 @@ public class GenericDependentResource
         && actualResource.getApiVersion().equals("apps/v1")) {
       return super.match(actualResource, primary, context);
     }
-    if (useSSAMatcher) {
+    if (Matcher.SSA.equals(matcher)) {
       return super.match(actualResource, primary, context);
     } else {
       return Result.nonComputed(false);

@@ -211,17 +211,17 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue>, ErrorSta
       return spec.getResourceTemplate() != null
           ? new GCGenericDependentResource(genericTemplateHandler, spec.getResourceTemplate(),
               spec.getName(),
-              spec.isClusterScoped(), spec.isUseSSAMatcher())
+              spec.isClusterScoped(), spec.getMatcher())
           : new GCGenericDependentResource(genericTemplateHandler, spec.getResource(),
               spec.getName(),
-              spec.isClusterScoped(), spec.isUseSSAMatcher());
+              spec.isClusterScoped(), spec.getMatcher());
     } else {
       return spec.getResourceTemplate() != null
           ? new GenericDependentResource(genericTemplateHandler,
               spec.getResourceTemplate(), spec.getName(), spec.isClusterScoped(),
-              spec.isUseSSAMatcher())
+              spec.getMatcher())
           : new GenericDependentResource(genericTemplateHandler,
-              spec.getResource(), spec.getName(), spec.isClusterScoped(), spec.isUseSSAMatcher());
+              spec.getResource(), spec.getName(), spec.isClusterScoped(), spec.getMatcher());
     }
   }
 

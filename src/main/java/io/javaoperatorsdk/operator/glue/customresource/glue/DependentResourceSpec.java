@@ -21,7 +21,7 @@ public class DependentResourceSpec {
 
   private String resourceTemplate;
 
-  private boolean useSSAMatcher = true;
+  private Matcher matcher = Matcher.SSA;
 
   private List<String> dependsOn = new ArrayList<>();
 
@@ -94,12 +94,12 @@ public class DependentResourceSpec {
     this.clusterScoped = clusterScoped;
   }
 
-  public boolean isUseSSAMatcher() {
-    return useSSAMatcher;
+  public Matcher getMatcher() {
+    return matcher;
   }
 
-  public void setUseSSAMatcher(boolean useSSAMatcher) {
-    this.useSSAMatcher = useSSAMatcher;
+  public void setMatcher(Matcher matcher) {
+    this.matcher = matcher;
   }
 
   @Override
@@ -109,9 +109,9 @@ public class DependentResourceSpec {
     if (o == null || getClass() != o.getClass())
       return false;
     DependentResourceSpec that = (DependentResourceSpec) o;
-    return clusterScoped == that.clusterScoped && useSSAMatcher == that.useSSAMatcher
-        && Objects.equals(name, that.name) && Objects.equals(resource, that.resource)
-        && Objects.equals(resourceTemplate, that.resourceTemplate)
+    return clusterScoped == that.clusterScoped && Objects.equals(name, that.name)
+        && Objects.equals(resource, that.resource)
+        && Objects.equals(resourceTemplate, that.resourceTemplate) && matcher == that.matcher
         && Objects.equals(dependsOn, that.dependsOn)
         && Objects.equals(readyPostCondition, that.readyPostCondition)
         && Objects.equals(condition, that.condition);
@@ -119,7 +119,7 @@ public class DependentResourceSpec {
 
   @Override
   public int hashCode() {
-    return Objects.hash(name, clusterScoped, resource, resourceTemplate, useSSAMatcher, dependsOn,
+    return Objects.hash(name, clusterScoped, resource, resourceTemplate, matcher, dependsOn,
         readyPostCondition, condition);
   }
 }
