@@ -48,4 +48,5 @@ As mentioned before there are solutions that are comparable to ours, and all of 
 
 - [Crossplane Composition](https://docs.crossplane.io/latest/concepts/compositions/) TODO
 
-- [Kro](https://github.com/awslabs/kro) TODO
+- [Kro](https://github.com/awslabs/kro) conceptually is also similar, compared to Glue for now is missing key features
+  like related resources, depends-on relation and related condition.
