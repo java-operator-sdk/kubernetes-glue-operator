@@ -40,6 +40,10 @@ It has several attributes:
    (Same as `reconcilePrecondition` in Java Operator SDK)
 - **`readyPostCondition`** - condition to check if the resource is considered to be ready. If a resource is ready all the resources, which depend on it
    can proceed in reconciliation.
+- **`matcher`** - Match resources with Java Operator SDK Server Side Apply based matcher (default `SSA`). Matching resources
+  is makes the reconciliation much more efficient, since controller updates the resource only if truly changed. However,
+  it is not possible to match resources because of some characteristics of Kubernetes API (default values, value conversions, etc)
+  so you can always opt out the matching (use value `NONE`), and update the resource on every reconciliation.
 
 #### Built-in conditions
 

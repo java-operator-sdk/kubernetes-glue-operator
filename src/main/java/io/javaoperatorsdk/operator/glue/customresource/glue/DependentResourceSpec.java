@@ -21,6 +21,8 @@ public class DependentResourceSpec {
 
   private String resourceTemplate;
 
+  private Matcher matcher = Matcher.SSA;
+
   private List<String> dependsOn = new ArrayList<>();
 
   @PreserveUnknownFields
@@ -92,6 +94,14 @@ public class DependentResourceSpec {
     this.clusterScoped = clusterScoped;
   }
 
+  public Matcher getMatcher() {
+    return matcher;
+  }
+
+  public void setMatcher(Matcher matcher) {
+    this.matcher = matcher;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o)
@@ -101,7 +111,7 @@ public class DependentResourceSpec {
     DependentResourceSpec that = (DependentResourceSpec) o;
     return clusterScoped == that.clusterScoped && Objects.equals(name, that.name)
         && Objects.equals(resource, that.resource)
-        && Objects.equals(resourceTemplate, that.resourceTemplate)
+        && Objects.equals(resourceTemplate, that.resourceTemplate) && matcher == that.matcher
         && Objects.equals(dependsOn, that.dependsOn)
         && Objects.equals(readyPostCondition, that.readyPostCondition)
         && Objects.equals(condition, that.condition);
@@ -109,7 +119,7 @@ public class DependentResourceSpec {
 
   @Override
   public int hashCode() {
-    return Objects.hash(name, clusterScoped, resource, resourceTemplate, dependsOn,
+    return Objects.hash(name, clusterScoped, resource, resourceTemplate, matcher, dependsOn,
         readyPostCondition, condition);
   }
 }

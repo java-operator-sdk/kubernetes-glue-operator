@@ -22,6 +22,7 @@ import io.javaoperatorsdk.operator.glue.customresource.glue.Glue;
 import io.javaoperatorsdk.operator.glue.reconciler.ValidationAndErrorHandler;
 import io.quarkus.test.junit.QuarkusTest;
 
+import static io.javaoperatorsdk.operator.glue.TestUtils.INITIAL_RECONCILE_WAIT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
@@ -351,6 +352,19 @@ class GlueTest extends TestBase {
     await().untilAsserted(() -> {
       var cr = get(TestCustomResource.class, "testcr1");
       assertThat(cr).isNull();
+    });
+  }
+
+  @Test
+  void customizeMatcher() {
+    var glue = createGlue("/glue/SimpleNotUseSSA.yaml");
+
+    await().pollDelay(INITIAL_RECONCILE_WAIT_TIMEOUT).untilAsserted(() -> {
+      assertThat(get(ConfigMap.class, "simple-glue-no-ssa-configmap")).isNotNull();
+    });
+    delete(glue);
+    await().pollDelay(INITIAL_RECONCILE_WAIT_TIMEOUT).untilAsserted(() -> {
+      assertThat(get(ConfigMap.class, "simple-glue-no-ssa-configmap")).isNull();
     });
   }
 
