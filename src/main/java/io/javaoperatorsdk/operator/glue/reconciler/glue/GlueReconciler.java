@@ -21,6 +21,7 @@ import io.javaoperatorsdk.operator.glue.customresource.glue.GlueStatus;
 import io.javaoperatorsdk.operator.glue.customresource.glue.condition.ConditionSpec;
 import io.javaoperatorsdk.operator.glue.customresource.glue.condition.JavaScriptConditionSpec;
 import io.javaoperatorsdk.operator.glue.customresource.glue.condition.ReadyConditionSpec;
+import io.javaoperatorsdk.operator.glue.dependent.GCGenericBulkDependentResource;
 import io.javaoperatorsdk.operator.glue.dependent.GCGenericDependentResource;
 import io.javaoperatorsdk.operator.glue.dependent.GenericDependentResource;
 import io.javaoperatorsdk.operator.glue.dependent.GenericResourceDiscriminator;
@@ -78,7 +79,7 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue>, ErrorSta
     log.debug("Reconciling glue. name: {} namespace: {}",
         primary.getMetadata().getName(), primary.getMetadata().getNamespace());
 
-    validationAndErrorHandler.checkIfNamesAreUnique(primary.getSpec());
+    validationAndErrorHandler.checkIfValidGlueSpec(primary.getSpec());
 
     registerRelatedResourceInformers(context, primary);
     if (deletedGlueIfParentMarkedForDeletion(context, primary)) {
@@ -209,9 +210,14 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue>, ErrorSta
 
     if (leafDependent && resourceInSameNamespaceAsPrimary && !spec.isClusterScoped()) {
       return spec.getResourceTemplate() != null
-          ? new GCGenericDependentResource(genericTemplateHandler, spec.getResourceTemplate(),
-              spec.getName(),
-              spec.isClusterScoped(), spec.getMatcher())
+          ? spec.getBulk()
+              ? new GCGenericBulkDependentResource(genericTemplateHandler,
+                  spec.getResourceTemplate(),
+                  spec.getName(),
+                  spec.isClusterScoped(), spec.getMatcher())
+              : new GCGenericDependentResource(genericTemplateHandler, spec.getResourceTemplate(),
+                  spec.getName(),
+                  spec.isClusterScoped(), spec.getMatcher())
           : new GCGenericDependentResource(genericTemplateHandler, spec.getResource(),
               spec.getName(),
               spec.isClusterScoped(), spec.getMatcher());

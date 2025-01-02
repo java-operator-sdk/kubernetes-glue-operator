@@ -23,6 +23,8 @@ public class DependentResourceSpec {
 
   private Matcher matcher = Matcher.SSA;
 
+  private Boolean bulk = false;
+
   private List<String> dependsOn = new ArrayList<>();
 
   @PreserveUnknownFields
@@ -102,6 +104,14 @@ public class DependentResourceSpec {
     this.matcher = matcher;
   }
 
+  public Boolean getBulk() {
+    return bulk;
+  }
+
+  public void setBulk(Boolean bulk) {
+    this.bulk = bulk;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o)
@@ -112,14 +122,14 @@ public class DependentResourceSpec {
     return clusterScoped == that.clusterScoped && Objects.equals(name, that.name)
         && Objects.equals(resource, that.resource)
         && Objects.equals(resourceTemplate, that.resourceTemplate) && matcher == that.matcher
-        && Objects.equals(dependsOn, that.dependsOn)
+        && Objects.equals(bulk, that.bulk) && Objects.equals(dependsOn, that.dependsOn)
         && Objects.equals(readyPostCondition, that.readyPostCondition)
         && Objects.equals(condition, that.condition);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(name, clusterScoped, resource, resourceTemplate, matcher, dependsOn,
+    return Objects.hash(name, clusterScoped, resource, resourceTemplate, matcher, bulk, dependsOn,
         readyPostCondition, condition);
   }
 }

@@ -138,9 +138,7 @@ public class Utils {
   public static Set<String> leafResourceNames(Glue glue) {
     Set<String> result = new HashSet<>();
     glue.getSpec().getChildResources().forEach(r -> result.add(r.getName()));
-    glue.getSpec().getChildResources().forEach(r -> {
-      r.getDependsOn().forEach(result::remove);
-    });
+    glue.getSpec().getChildResources().forEach(r -> r.getDependsOn().forEach(result::remove));
     return result;
   }
 
@@ -155,6 +153,12 @@ public class Utils {
     return getOptionalPropertyValueFromTemplate(resourceTemplate, property)
         .orElseThrow(() -> new IllegalArgumentException(
             "Template does not contain property. " + resourceTemplate));
+  }
+
+  public static GroupVersionKind getGVKFromTemplate(String resourceTemplate) {
+    String apiVersion = getApiVersionFromTemplate(resourceTemplate);
+    String kind = getKindFromTemplate(resourceTemplate);
+    return new GroupVersionKind(apiVersion, kind);
   }
 
 }

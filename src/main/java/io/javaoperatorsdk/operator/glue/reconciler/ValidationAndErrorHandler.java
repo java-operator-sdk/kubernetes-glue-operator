@@ -42,7 +42,20 @@ public class ValidationAndErrorHandler {
     }
   }
 
-  public void checkIfNamesAreUnique(GlueSpec glueSpec) {
+  public void checkIfValidGlueSpec(GlueSpec glueSpec) {
+    checkIfBulkProvidesResourceTemplate(glueSpec);
+    checkIfNamesAreUnique(glueSpec);
+  }
+
+  private void checkIfBulkProvidesResourceTemplate(GlueSpec glueSpec) {
+    glueSpec.getChildResources().forEach(r -> {
+      if (Boolean.TRUE.equals(r.getBulk()) && r.getResourceTemplate() == null) {
+        throw new GlueException("Bulk resource requires a template to be set");
+      }
+    });
+  }
+
+  void checkIfNamesAreUnique(GlueSpec glueSpec) {
     Set<String> seen = new HashSet<>();
     List<String> duplicates = new ArrayList<>();
 
