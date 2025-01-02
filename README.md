@@ -11,13 +11,13 @@ The project is implemented as a thin layer on top of battle-tested [workflow](ht
 
 ## Documentation
 
-[Getting Started](/docs/getting-started.md)
+[Getting started](/docs/getting-started.md)
 
-[Reference Documentation](/docs/reference.md)
+[Reference documentation](/docs/reference.md)
 
-[Rational and Comparison with Similar Solutions](/docs/comparison.md)
+[Rational and comparison with similar solutions](/docs/comparison.md)
 
-[Sample Index](/docs/sample-index.md)
+[Sample index](/docs/sample-index.md)
 
 ## Contact Us
 
