@@ -32,6 +32,7 @@ It has several attributes:
   [qute templating engine](https://quarkus.io/guides/qute-reference), other resources can be referenced from the templates, see below.  
   If the resource is namespace scoped and the namespace attribute is not specified in `.metadata` automatically the namespace of `Glue` 
   is used.
+- **`resourceTemplate`** - a string template for the resource that allows the use of all features of Qute. See sample [here](https://github.com/java-operator-sdk/kubernetes-glue-operator/blob/main/src/test/resources/glue/SimpleBulk.yaml).  
 - **`dependsOn`** - is a list of names of other child resources (not related resources). The resource is not reconciled until all the resources
    which it depends on are not reconciled and ready (if there is a `readyPostCondition` present). 
    Note that during the cleanup phase (when a `Glue` is deleted) resources are cleaned up in reverse order.
@@ -44,6 +45,7 @@ It has several attributes:
   is makes the reconciliation much more efficient, since controller updates the resource only if truly changed. However,
   it is not possible to match resources because of some characteristics of Kubernetes API (default values, value conversions, etc)
   so you can always opt out the matching (use value `NONE`), and update the resource on every reconciliation.
+- **`bulk`** - a flag to indicate if the child resource is a bulk resource (see below), default is `false`.
 
 #### Built-in conditions
 
@@ -54,6 +56,41 @@ At the moment there are two types of built-in conditions provided:
   are either child or related. The script should return a boolean value.
   See accessing the related resource in [WebPage sample](https://github.com/java-operator-sdk/kubernetes-glue-operator/blob/main/src/test/resources/sample/webpage/webpage.operator.yaml#L62-L64),
   and cross-referencing resources [here](https://github.com/java-operator-sdk/kubernetes-glue-operator/blob/main/src/test/resources/glue/TwoResourcesAndCondition.yaml#L23-L28).
+
+#### Bulk Resources
+
+Bulk is a type of child resource that handles a dynamic number of resources. For example, if you want to create many ConfigMaps based on some value in your custom resource.
+To use bulk resources set `bulk` flag of `childResource` to `true`. For now, **only** `resourceTemplate` is allowed in bulk resources, where you specify a yaml that contains 
+a list of resources under `items` key. As for non-bulk resources, all the related resources, parent and other child resources which this resource `dependsOn`, are available in the template.
+
+In the following sample, the number of created `ConfigMaps` is based on the `replicas` value from the `.spec` of the custom resource:
+
+```yaml
+apiVersion: io.javaoperatorsdk.operator.glue/v1beta1
+kind: GlueOperator
+metadata:
+  name: bulk-sample
+spec:
+  parent:
+    apiVersion: io.javaoperatorsdk.operator.glue/v1
+    kind: TestCustomResource
+  childResources:
+    - name: configMaps
+      bulk: true
+      resourceTemplate: |
+        items:
+        {#for i in parent.spec.replicas}
+        - apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            name: {parent.metadata.name}-{i}
+          data:
+            key: "value{i}"
+        {/for}
+```
+
+See the `GlueOperator` example [here](https://github.com/java-operator-sdk/kubernetes-glue-operator/blob/main/src/test/resources/glueoperator/BulkOperator.yaml) and a simple `Glue` example [here](https://github.com/java-operator-sdk/kubernetes-glue-operator/blob/c172f54943c5b6d0c8a4a6bf1a85a02113c2f2a9/src/test/resources/glue/SimpleBulk.yaml#L4).
+
 
 ### Related resources
 
