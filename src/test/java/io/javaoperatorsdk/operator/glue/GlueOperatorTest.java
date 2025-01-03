@@ -4,7 +4,6 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.stream.IntStream;
 
-import io.javaoperatorsdk.operator.glue.reconciler.operator.GlueOperatorReconciler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -20,6 +19,7 @@ import io.javaoperatorsdk.operator.glue.customresource.operator.GlueOperator;
 import io.javaoperatorsdk.operator.glue.customresource.operator.GlueOperatorSpec;
 import io.javaoperatorsdk.operator.glue.customresource.operator.Parent;
 import io.javaoperatorsdk.operator.glue.reconciler.ValidationAndErrorHandler;
+import io.javaoperatorsdk.operator.glue.reconciler.operator.GlueOperatorReconciler;
 import io.quarkus.test.junit.QuarkusTest;
 
 import static io.javaoperatorsdk.operator.glue.TestData.*;
@@ -250,8 +250,8 @@ class GlueOperatorTest extends TestBase {
 
     delete(createdCR);
     assertConfigMapsCreated(cr, 0);
-    await().untilAsserted(()->{
-      var actualCR = get(TestCustomResource.class,cr.getMetadata().getName());
+    await().untilAsserted(() -> {
+      var actualCR = get(TestCustomResource.class, cr.getMetadata().getName());
       assertThat(actualCR).isNull();
     });
 
@@ -260,7 +260,8 @@ class GlueOperatorTest extends TestBase {
 
   private void assertConfigMapsCreated(TestCustomResource cr, int expected) {
     await().untilAsserted(() -> {
-      var configMaps = getRelatedList(ConfigMap.class, GlueOperatorReconciler.glueName(cr.getMetadata().getName(),cr.getKind()));
+      var configMaps = getRelatedList(ConfigMap.class,
+          GlueOperatorReconciler.glueName(cr.getMetadata().getName(), cr.getKind()));
       assertThat(configMaps).hasSize(expected);
     });
   }
