@@ -1,6 +1,7 @@
 package io.javaoperatorsdk.operator.glue;
 
 import java.time.Duration;
+import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -68,6 +69,18 @@ public class TestBase {
 
   protected <T extends HasMetadata> T get(Class<T> clazz, String name) {
     return client.resources(clazz).inNamespace(testNamespace).withName(name).get();
+  }
+
+  protected <T extends HasMetadata> List<T> list(Class<T> clazz) {
+    return client.resources(clazz).inNamespace(testNamespace).list().getItems();
+  }
+
+  protected <T extends HasMetadata> List<T> getRelatedList(Class<T> clazz, String ownerName) {
+    return list(clazz).stream()
+        .filter(cm -> !cm.getMetadata().getOwnerReferences().isEmpty()
+            && cm.getMetadata().getOwnerReferences()
+                .get(0).getName().equals(ownerName))
+        .toList();
   }
 
   protected <T extends HasMetadata> T update(T resource) {

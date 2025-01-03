@@ -368,6 +368,25 @@ class GlueTest extends TestBase {
     });
   }
 
+  @Test
+  void simpleBulk() {
+    var glue = createGlue("/glue/" + "SimpleBulk.yaml");
+
+    await().untilAsserted(() -> {
+      var configMaps = getRelatedList(ConfigMap.class, glue.getMetadata().getName());
+      assertThat(configMaps).hasSize(3);
+      assertThat(configMaps)
+          .allMatch(cm -> cm.getMetadata().getName().startsWith("simple-glue-configmap-"));
+    });
+
+    delete(glue);
+
+    await().untilAsserted(
+        () -> assertThat(getRelatedList(ConfigMap.class, glue.getMetadata().getName()).isEmpty()));
+  }
+
+
+
   private List<Glue> testWorkflowList(int num) {
     List<Glue> res = new ArrayList<>();
     IntStream.range(0, num).forEach(index -> {

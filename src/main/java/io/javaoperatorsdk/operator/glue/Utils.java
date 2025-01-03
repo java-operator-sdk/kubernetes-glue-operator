@@ -138,9 +138,7 @@ public class Utils {
   public static Set<String> leafResourceNames(Glue glue) {
     Set<String> result = new HashSet<>();
     glue.getSpec().getChildResources().forEach(r -> result.add(r.getName()));
-    glue.getSpec().getChildResources().forEach(r -> {
-      r.getDependsOn().forEach(result::remove);
-    });
+    glue.getSpec().getChildResources().forEach(r -> r.getDependsOn().forEach(result::remove));
     return result;
   }
 
@@ -148,13 +146,25 @@ public class Utils {
       String property) {
     var finalProp = property + ":";
     var targetLine = resourceTemplate.lines().filter(l -> l.contains(finalProp)).findFirst();
-    return targetLine.map(l -> l.replace(finalProp, "").trim());
+    return targetLine.map(l -> {
+      int index = l.indexOf(finalProp);
+      if (index > 0) {
+        l = l.substring(index);
+      }
+      return l.replace(finalProp, "").trim();
+    });
   }
 
   private static String getPropertyValueFromTemplate(String resourceTemplate, String property) {
     return getOptionalPropertyValueFromTemplate(resourceTemplate, property)
         .orElseThrow(() -> new IllegalArgumentException(
             "Template does not contain property. " + resourceTemplate));
+  }
+
+  public static GroupVersionKind getGVKFromTemplate(String resourceTemplate) {
+    String apiVersion = getApiVersionFromTemplate(resourceTemplate);
+    String kind = getKindFromTemplate(resourceTemplate);
+    return new GroupVersionKind(apiVersion, kind);
   }
 
 }

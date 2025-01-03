@@ -20,14 +20,13 @@ public class GenericDependentResource
     Updater<GenericKubernetesResource, Glue>,
     Creator<GenericKubernetesResource, Glue> {
 
-  private final GenericKubernetesResource desired;
-  private final String desiredTemplate;
-  private final String name;
-  private final boolean clusterScoped;
-  private final Matcher matcher;
+  protected final GenericKubernetesResource desired;
+  protected final String desiredTemplate;
+  protected final String name;
+  protected final boolean clusterScoped;
+  protected final Matcher matcher;
 
-  // optimize share between instances
-  private final GenericTemplateHandler genericTemplateHandler;
+  protected final GenericTemplateHandler genericTemplateHandler;
 
   public GenericDependentResource(GenericTemplateHandler genericTemplateHandler,
       GenericKubernetesResource desired, String name,

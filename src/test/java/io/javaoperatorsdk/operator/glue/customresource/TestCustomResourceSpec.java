@@ -6,6 +6,8 @@ public class TestCustomResourceSpec {
 
   private String value;
 
+  private Integer replicas;
+
   private List<String> listValues;
 
   public String getValue() {
@@ -24,5 +26,14 @@ public class TestCustomResourceSpec {
   public TestCustomResourceSpec setListValues(List<String> listValues) {
     this.listValues = listValues;
     return this;
+  }
+
+
+  public Integer getReplicas() {
+    return replicas;
+  }
+
+  public void setReplicas(Integer replicas) {
+    this.replicas = replicas;
   }
 }

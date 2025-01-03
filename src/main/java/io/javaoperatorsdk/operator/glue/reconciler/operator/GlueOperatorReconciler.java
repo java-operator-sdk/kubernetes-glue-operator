@@ -75,7 +75,7 @@ public class GlueOperatorReconciler
     log.info("Reconciling GlueOperator {} in namespace: {}", glueOperator.getMetadata().getName(),
         glueOperator.getMetadata().getNamespace());
 
-    validationAndErrorHandler.checkIfNamesAreUnique(glueOperator.getSpec());
+    validationAndErrorHandler.checkIfValidGlueSpec(glueOperator.getSpec());
 
     var targetCREventSource = getOrRegisterCustomResourceEventSource(glueOperator, context);
     targetCREventSource.list().forEach(cr -> {

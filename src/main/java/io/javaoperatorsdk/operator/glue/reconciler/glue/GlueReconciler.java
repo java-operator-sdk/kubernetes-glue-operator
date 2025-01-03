@@ -21,12 +21,14 @@ import io.javaoperatorsdk.operator.glue.customresource.glue.GlueStatus;
 import io.javaoperatorsdk.operator.glue.customresource.glue.condition.ConditionSpec;
 import io.javaoperatorsdk.operator.glue.customresource.glue.condition.JavaScriptConditionSpec;
 import io.javaoperatorsdk.operator.glue.customresource.glue.condition.ReadyConditionSpec;
+import io.javaoperatorsdk.operator.glue.dependent.GCGenericBulkDependentResource;
 import io.javaoperatorsdk.operator.glue.dependent.GCGenericDependentResource;
 import io.javaoperatorsdk.operator.glue.dependent.GenericDependentResource;
 import io.javaoperatorsdk.operator.glue.dependent.GenericResourceDiscriminator;
 import io.javaoperatorsdk.operator.glue.reconciler.ValidationAndErrorHandler;
 import io.javaoperatorsdk.operator.glue.reconciler.operator.GlueOperatorReconciler;
 import io.javaoperatorsdk.operator.glue.templating.GenericTemplateHandler;
+import io.javaoperatorsdk.operator.processing.dependent.BulkDependentResource;
 import io.javaoperatorsdk.operator.processing.dependent.workflow.Condition;
 import io.javaoperatorsdk.operator.processing.dependent.workflow.KubernetesResourceDeletedCondition;
 import io.javaoperatorsdk.operator.processing.dependent.workflow.WorkflowBuilder;
@@ -78,7 +80,7 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue>, ErrorSta
     log.debug("Reconciling glue. name: {} namespace: {}",
         primary.getMetadata().getName(), primary.getMetadata().getNamespace());
 
-    validationAndErrorHandler.checkIfNamesAreUnique(primary.getSpec());
+    validationAndErrorHandler.checkIfValidGlueSpec(primary.getSpec());
 
     registerRelatedResourceInformers(context, primary);
     if (deletedGlueIfParentMarkedForDeletion(context, primary)) {
@@ -183,9 +185,11 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue>, ErrorSta
     var dr = createDependentResource(spec, leafDependent, resourceInSameNamespaceAsPrimary);
     var gvk = dr.getGroupVersionKind();
 
-    dr.setResourceDiscriminator(new GenericResourceDiscriminator(dr.getGroupVersionKind(),
-        genericTemplateHandler.processTemplate(Utils.getName(spec), primary, context),
-        targetNamespace.orElse(null)));
+    if (!(dr instanceof BulkDependentResource<?, ?>)) {
+      dr.setResourceDiscriminator(new GenericResourceDiscriminator(dr.getGroupVersionKind(),
+          genericTemplateHandler.processTemplate(Utils.getName(spec), primary, context),
+          targetNamespace.orElse(null)));
+    }
 
     var es = informerRegister.registerInformer(context, gvk, primary);
     dr.configureWith(es);
@@ -209,9 +213,14 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue>, ErrorSta
 
     if (leafDependent && resourceInSameNamespaceAsPrimary && !spec.isClusterScoped()) {
       return spec.getResourceTemplate() != null
-          ? new GCGenericDependentResource(genericTemplateHandler, spec.getResourceTemplate(),
-              spec.getName(),
-              spec.isClusterScoped(), spec.getMatcher())
+          ? spec.getBulk()
+              ? new GCGenericBulkDependentResource(genericTemplateHandler,
+                  spec.getResourceTemplate(),
+                  spec.getName(),
+                  spec.isClusterScoped(), spec.getMatcher())
+              : new GCGenericDependentResource(genericTemplateHandler, spec.getResourceTemplate(),
+                  spec.getName(),
+                  spec.isClusterScoped(), spec.getMatcher())
           : new GCGenericDependentResource(genericTemplateHandler, spec.getResource(),
               spec.getName(),
               spec.isClusterScoped(), spec.getMatcher());
