@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.stream.IntStream;
 
+import io.javaoperatorsdk.operator.glue.reconciler.operator.GlueOperatorReconciler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -229,6 +230,40 @@ class GlueOperatorTest extends TestBase {
     });
   }
 
+  @Test
+  void operatorWithBulkResource() {
+    var go = create(TestUtils
+        .loadGlueOperator("/glueoperator/BulkOperator.yaml"));
+
+    var cr = testCustomResource();
+    cr.getSpec().setReplicas(2);
+    var createdCR = create(cr);
+    assertConfigMapsCreated(cr, 2);
+
+    createdCR.getSpec().setReplicas(3);
+    createdCR = update(createdCR);
+    assertConfigMapsCreated(cr, 3);
+
+    createdCR.getSpec().setReplicas(1);
+    createdCR = update(createdCR);
+    assertConfigMapsCreated(cr, 1);
+
+    delete(createdCR);
+    assertConfigMapsCreated(cr, 0);
+    await().untilAsserted(()->{
+      var actualCR = get(TestCustomResource.class,cr.getMetadata().getName());
+      assertThat(actualCR).isNull();
+    });
+
+    delete(go);
+  }
+
+  private void assertConfigMapsCreated(TestCustomResource cr, int expected) {
+    await().untilAsserted(() -> {
+      var configMaps = getRelatedList(ConfigMap.class, GlueOperatorReconciler.glueName(cr.getMetadata().getName(),cr.getKind()));
+      assertThat(configMaps).hasSize(expected);
+    });
+  }
 
   GlueOperator testWorkflowOperator() {
     var wo = new GlueOperator();

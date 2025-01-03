@@ -1,0 +1,21 @@
+apiVersion: io.javaoperatorsdk.operator.glue/v1beta1
+kind: GlueOperator
+metadata:
+  name: templating-sample
+spec:
+  parent:
+    apiVersion: io.javaoperatorsdk.operator.glue/v1
+    kind: TestCustomResource
+  childResources:
+    - name: configMap1
+      bulk: true
+      resourceTemplate: |
+        items:
+        {#for i in parent.spec.replicas}
+        - apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            name: {parent.metadata.name}-{i}
+          data:
+            key: "value{i}"
+        {/for}

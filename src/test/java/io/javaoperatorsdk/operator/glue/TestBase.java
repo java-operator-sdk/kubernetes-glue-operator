@@ -75,6 +75,14 @@ public class TestBase {
     return client.resources(clazz).inNamespace(testNamespace).list().getItems();
   }
 
+  protected <T extends HasMetadata> List<T> getRelatedList(Class<T> clazz, String ownerName) {
+    return list(clazz).stream()
+        .filter(cm -> !cm.getMetadata().getOwnerReferences().isEmpty()
+            && cm.getMetadata().getOwnerReferences()
+                .get(0).getName().equals(ownerName))
+        .toList();
+  }
+
   protected <T extends HasMetadata> T update(T resource) {
     resource.getMetadata().setResourceVersion(null);
     return client.resource(resource).inNamespace(testNamespace).update();
