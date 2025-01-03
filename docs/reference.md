@@ -89,8 +89,7 @@ spec:
         {/for}
 ```
 
-See the `GlueOperator` example [here](https://github.com/java-operator-sdk/kubernetes-glue-operator/blob/main/src/test/resources/glueoperator/BulkOperator.yaml) and a simple `Glue` example [here](https://github.com/java-operator-sdk/kubernetes-glue-operator/blob/c172f54943c5b6d0c8a4a6bf1a85a02113c2f2a9/src/test/resources/glue/SimpleBulk.yaml#L4).
-
+See the `GlueOperator` example [here](https://github.com/java-operator-sdk/kubernetes-glue-operator/blob/main/src/test/resources/glueoperator/BulkOperator.yaml) and a simple `Glue` example [here](https://github.com/java-operator-sdk/kubernetes-glue-operator/blob/main/src/test/resources/glue/SimpleBulk.yaml#L4).
 
 ### Related resources
 
