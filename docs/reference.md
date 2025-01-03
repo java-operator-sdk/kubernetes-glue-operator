@@ -80,7 +80,7 @@ spec:
       bulk: true             # set bulk flag to true
       resourceTemplate: |    # only resourceTemplate allowed
         items:               # items wraps the templated resources
-        {#for i in parent.spec.replicas}  # use parent spec to template all the resources
+        {#for i in parent.spec.replicas}  # using parent's spec to template all the resources
         - apiVersion: v1
           kind: ConfigMap
           metadata:
