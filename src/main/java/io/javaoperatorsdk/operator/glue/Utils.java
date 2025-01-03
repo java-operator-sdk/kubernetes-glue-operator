@@ -146,7 +146,13 @@ public class Utils {
       String property) {
     var finalProp = property + ":";
     var targetLine = resourceTemplate.lines().filter(l -> l.contains(finalProp)).findFirst();
-    return targetLine.map(l -> l.replace(finalProp, "").trim());
+    return targetLine.map(l -> {
+      int index = l.indexOf(finalProp);
+      if (index > 0) {
+        l = l.substring(index);
+      }
+      return l.replace(finalProp, "").trim();
+    });
   }
 
   private static String getPropertyValueFromTemplate(String resourceTemplate, String property) {

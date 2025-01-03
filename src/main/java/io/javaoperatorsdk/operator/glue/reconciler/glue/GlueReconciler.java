@@ -28,6 +28,7 @@ import io.javaoperatorsdk.operator.glue.dependent.GenericResourceDiscriminator;
 import io.javaoperatorsdk.operator.glue.reconciler.ValidationAndErrorHandler;
 import io.javaoperatorsdk.operator.glue.reconciler.operator.GlueOperatorReconciler;
 import io.javaoperatorsdk.operator.glue.templating.GenericTemplateHandler;
+import io.javaoperatorsdk.operator.processing.dependent.BulkDependentResource;
 import io.javaoperatorsdk.operator.processing.dependent.workflow.Condition;
 import io.javaoperatorsdk.operator.processing.dependent.workflow.KubernetesResourceDeletedCondition;
 import io.javaoperatorsdk.operator.processing.dependent.workflow.WorkflowBuilder;
@@ -184,9 +185,11 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue>, ErrorSta
     var dr = createDependentResource(spec, leafDependent, resourceInSameNamespaceAsPrimary);
     var gvk = dr.getGroupVersionKind();
 
-    dr.setResourceDiscriminator(new GenericResourceDiscriminator(dr.getGroupVersionKind(),
-        genericTemplateHandler.processTemplate(Utils.getName(spec), primary, context),
-        targetNamespace.orElse(null)));
+    if (!(dr instanceof BulkDependentResource<?, ?>)) {
+      dr.setResourceDiscriminator(new GenericResourceDiscriminator(dr.getGroupVersionKind(),
+          genericTemplateHandler.processTemplate(Utils.getName(spec), primary, context),
+          targetNamespace.orElse(null)));
+    }
 
     var es = informerRegister.registerInformer(context, gvk, primary);
     dr.configureWith(es);
