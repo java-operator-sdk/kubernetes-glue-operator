@@ -84,7 +84,7 @@ spec:
         - apiVersion: v1
           kind: ConfigMap
           metadata:
-            name: {parent.metadata.name}-{i}
+            name: {parent.metadata.name}-{i}  # unique name is generated for all resources
           data:
             key: "value{i}"
         {/for}
