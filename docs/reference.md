@@ -62,6 +62,7 @@ At the moment there are two types of built-in conditions provided:
 Bulk is a type of child resource that handles a dynamic number of resources. For example, if you want to create many ConfigMaps based on some value in your custom resource.
 To use bulk resources set `bulk` flag of `childResource` to `true`. For now, **only** `resourceTemplate` is allowed in bulk resources, where you specify a yaml that contains 
 a list of resources under `items` key. As for non-bulk resources, all the related resources, parent and other child resources which this resource `dependsOn`, are available in the template.
+Naturally, only one kind of resource is allowed in the generated resource list.
 
 In the following sample, the number of created `ConfigMaps` is based on the `replicas` value from the `.spec` of the custom resource:
 
@@ -76,10 +77,10 @@ spec:
     kind: TestCustomResource
   childResources:
     - name: configMaps
-      bulk: true
-      resourceTemplate: |
-        items:
-        {#for i in parent.spec.replicas}
+      bulk: true             # set bulk flag to true
+      resourceTemplate: |    # only resourceTemplate allowed
+        items:               # items wraps the templated resources
+        {#for i in parent.spec.replicas}  # use parent spec to template all the resources
         - apiVersion: v1
           kind: ConfigMap
           metadata:
