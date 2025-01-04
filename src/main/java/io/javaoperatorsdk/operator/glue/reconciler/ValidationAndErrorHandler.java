@@ -22,6 +22,8 @@ import jakarta.inject.Singleton;
 @Singleton
 public class ValidationAndErrorHandler {
 
+  public static final int MAX_MESSAGE_SIZE = 150;
+
   private static final Logger log = LoggerFactory.getLogger(ValidationAndErrorHandler.class);
 
   public static final String NON_UNIQUE_NAMES_FOUND_PREFIX = "Non unique names found: ";
@@ -37,7 +39,11 @@ public class ValidationAndErrorHandler {
           .setErrorMessage(NON_UNIQUE_NAMES_FOUND_PREFIX + String.join(",", ex.getDuplicates()));
       return ErrorStatusUpdateControl.updateStatus(resource).withNoRetry();
     } else {
-      resource.getStatus().setErrorMessage("Error during reconciliation");
+      var message = e.getMessage();
+      if (message.length() > MAX_MESSAGE_SIZE) {
+        message = message.substring(0, MAX_MESSAGE_SIZE) + "...";
+      }
+      resource.getStatus().setErrorMessage("Error: " + message);
       return ErrorStatusUpdateControl.updateStatus(resource);
     }
   }
