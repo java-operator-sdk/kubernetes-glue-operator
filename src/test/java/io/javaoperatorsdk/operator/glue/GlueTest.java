@@ -380,11 +380,37 @@ class GlueTest extends TestBase {
     });
 
     delete(glue);
-
     await().untilAsserted(
         () -> assertThat(getRelatedList(ConfigMap.class, glue.getMetadata().getName()).isEmpty()));
   }
 
+  @Test
+  void invalidGlueMessageHandling() {
+    var glueName = "invalid-glue";
+    var glue = createGlue("/glue/Invalid.yaml");
+
+    await().pollDelay(INITIAL_RECONCILE_WAIT_TIMEOUT).untilAsserted(() -> {
+      var g = get(Glue.class, glueName);
+      assertThat(g.getStatus()).isNotNull();
+      assertThat(g.getStatus().getErrorMessage()).isNotNull();
+    });
+
+    // fix error
+    glue.getSpec().getChildResources().get(1).setName("configMap2");
+    glue.getMetadata().setResourceVersion(null);
+    update(glue);
+
+    await().pollDelay(INITIAL_RECONCILE_WAIT_TIMEOUT).untilAsserted(() -> {
+      var g = get(Glue.class, glueName);
+      assertThat(g.getStatus().getErrorMessage()).isNull();
+    });
+
+    delete(glue);
+    await().pollDelay(INITIAL_RECONCILE_WAIT_TIMEOUT).untilAsserted(() -> {
+      var g = get(Glue.class, glueName);
+      assertThat(g).isNull();
+    });
+  }
 
 
   private List<Glue> testWorkflowList(int num) {

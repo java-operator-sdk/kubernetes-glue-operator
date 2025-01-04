@@ -1,0 +1,23 @@
+# Invalid GLUE, presents resources with non-unique name
+apiVersion: io.javaoperatorsdk.operator.glue/v1beta1
+kind: Glue
+metadata:
+  name: invalid-glue
+spec:
+  childResources:
+    - name: configMap
+      resource:
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: simple-glue-configmap1
+        data:
+          key: "value1"
+    - name: configMap  # invalid: duplicate name
+      resource:
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: simple-glue-configmap2
+        data:
+          key: "value2"

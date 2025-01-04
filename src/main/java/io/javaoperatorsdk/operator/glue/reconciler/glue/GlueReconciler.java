@@ -93,17 +93,7 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue>, ErrorSta
     informerRegister.deRegisterInformerOnResourceFlowChange(context, primary);
     result.throwAggregateExceptionIfErrorsPresent();
     patchRelatedResourcesStatus(context, primary);
-    return UpdateControl.noUpdate();
-  }
-
-  private boolean deletedGlueIfParentMarkedForDeletion(Context<Glue> context, Glue primary) {
-    var parent = getParentRelatedResource(primary, context);
-    if (parent.map(HasMetadata::isMarkedForDeletion).orElse(false)) {
-      context.getClient().resource(primary).delete();
-      return true;
-    } else {
-      return false;
-    }
+    return removeErrorMessageFromGlueStatusIfPresent(primary);
   }
 
   @Override
@@ -125,6 +115,34 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue>, ErrorSta
       informerRegister.deRegisterInformerForRelatedResources(primary, context);
 
       return DeleteControl.defaultDelete();
+    }
+  }
+
+  @Override
+  public ErrorStatusUpdateControl<Glue> updateErrorStatus(Glue resource, Context<Glue> context,
+      Exception e) {
+    if (resource.getStatus() == null) {
+      resource.setStatus(new GlueStatus());
+    }
+    return validationAndErrorHandler.updateStatusErrorMessage(e, resource);
+  }
+
+  private boolean deletedGlueIfParentMarkedForDeletion(Context<Glue> context, Glue primary) {
+    var parent = getParentRelatedResource(primary, context);
+    if (parent.map(HasMetadata::isMarkedForDeletion).orElse(false)) {
+      context.getClient().resource(primary).delete();
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  private UpdateControl<Glue> removeErrorMessageFromGlueStatusIfPresent(Glue primary) {
+    if (primary.getStatus() != null && primary.getStatus().getErrorMessage() != null) {
+      primary.getStatus().setErrorMessage(null);
+      return UpdateControl.patchStatus(primary);
+    } else {
+      return UpdateControl.noUpdate();
     }
   }
 
@@ -234,7 +252,6 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue>, ErrorSta
     }
   }
 
-  // todo add workflow result?
   private void patchRelatedResourcesStatus(Context<Glue> context,
       Glue primary) {
 
@@ -343,15 +360,6 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue>, ErrorSta
 
   private String parentFinalizer(String glueName) {
     return PARENT_GLUE_FINALIZER_PREFIX + glueName;
-  }
-
-  @Override
-  public ErrorStatusUpdateControl<Glue> updateErrorStatus(Glue resource, Context<Glue> context,
-      Exception e) {
-    if (resource.getStatus() == null) {
-      resource.setStatus(new GlueStatus());
-    }
-    return validationAndErrorHandler.updateStatusErrorMessage(e, resource);
   }
 
   public static boolean isGlueOfAGlueOperator(Glue glue) {
