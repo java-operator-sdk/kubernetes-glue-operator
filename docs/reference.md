@@ -13,7 +13,7 @@ Although it is limited only to Kubernetes resources it makes it very easy to use
         
    ONLY for object-based templates (thus not string templates) the values can be set using the placeholder notation from Qute: 
    ```yaml
-   value: "{string.value.reference}" 
+   value: "{string.value}" 
    ```
    With this standard notation, the result value will be always encoded in double quotes:
     ```yaml
@@ -22,7 +22,7 @@ Although it is limited only to Kubernetes resources it makes it very easy to use
    Since there is no simple way to check if the referenced value is a string or other value
    (boolean, numeric, etc) for non-string values, user should use double brackets:
     ```yaml
-   value: "{{nonstring.value.reference}}" 
+   value: "{{nonstring.value}}" 
    ```
    what would result in a value without enclosed double quotes in the produced yaml:
     ```yaml
