@@ -6,8 +6,8 @@ spec:
   parent:
     apiVersion: glueoperator.sample/v1
     kind: WebPage
-    statusTemplate: |
-      observedGeneration: {parent.metadata.generation}
+    status:
+      observedGeneration: "{{parent.metadata.generation}}"
   childResources:
     - name: htmlconfigmap
       resource:

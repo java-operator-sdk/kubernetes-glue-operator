@@ -67,8 +67,8 @@ spec:
   parent:
     apiVersion: glueoperator.sample/v1  # watches all the custom resource of type WebPage
     kind: WebPage
-    statusTemplate: | # update the status of the custom resource at the end of reconciliation
-      observedGeneration: {parent.metadata.generation}
+    status:  # update the status of the custom resource at the end of reconciliation
+      observedGeneration: "{{parent.metadata.generation}}" # since it's a non-string value needs double curly brackets 
   childResources:
     - name: htmlconfigmap
       resource:
