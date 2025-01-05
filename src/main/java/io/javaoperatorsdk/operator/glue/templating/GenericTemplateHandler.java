@@ -34,7 +34,7 @@ public class GenericTemplateHandler {
 
   private String handleDoubleCurlyBrackets(String template) {
     template = template.replace("\"{{", "{");
-    return template.replace("}}\n", "}");
+    return template.replace("}}\"", "}");
   }
 
   public String processInputAndTemplate(Map<String, GenericKubernetesResource> data,

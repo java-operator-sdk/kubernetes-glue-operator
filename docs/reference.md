@@ -8,8 +8,31 @@ Although it is limited only to Kubernetes resources it makes it very easy to use
 
 ## Generic Notes
 
-- All templates (both object and string based) uses [Qute templating engine](https://quarkus.io/guides/qute-reference). While objects allow only
-  placeholders, you can use the full power of qute in string templates.
+ - All templates (both object and string-based) uses [Qute templating engine](https://quarkus.io/guides/qute-reference). While objects allow only
+   placeholders, you can use the full power of qute in string templates.
+        
+   ONLY for object-based templates (thus not string templates) the values can be set using the placeholder notation from Qute: 
+   ```yaml
+   value: "{string.value.reference}" 
+   ```
+   With this standard notation, the result value will be always encoded in double quotes:
+    ```yaml
+   value: "1" 
+   ```
+   Since there is no simple way to check if the referenced value is a string or other value
+   (boolean, numeric, etc) for non-string values, user should use double brackets:
+    ```yaml
+   value: "{{nonstring.value.reference}}" 
+   ```
+   what would result in a value without enclosed double quotes in the produced yaml:
+    ```yaml
+   value: 1 
+   ```
+   See sample [here](https://github.com/java-operator-sdk/kubernetes-glue-operator/blob/main/src/test/resources/sample/webpage/webpage.operator.yaml#L10).
+   Implementation wise, this is a preprocessor that strips the enclosed quotes and additional curly bracket
+   before it is passed to Qute.
+   In the future, we might remove such obligation by checking the type 
+   of the target value in the related schema.
 
 ## [Glue resource](https://github.com/java-operator-sdk/kubernetes-glue-operator/releases/latest/download/glues.glue-v1.yml)
 
