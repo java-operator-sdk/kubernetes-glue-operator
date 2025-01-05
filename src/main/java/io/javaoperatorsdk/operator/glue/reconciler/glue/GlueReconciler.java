@@ -195,7 +195,7 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue>, ErrorSta
     // todo test processing ns as template
     // name can reference related resources todo doc
     var targetNamespace = Utils.getNamespace(spec).map(ns -> genericTemplateHandler
-        .processTemplate(ns, primary, context));
+        .processTemplate(ns, primary, false, context));
     var resourceInSameNamespaceAsPrimary =
         targetNamespace.map(n -> n.trim().equals(primary.getMetadata().getNamespace().trim()))
             .orElse(true);
@@ -205,7 +205,7 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue>, ErrorSta
 
     if (!(dr instanceof BulkDependentResource<?, ?>)) {
       dr.setResourceDiscriminator(new GenericResourceDiscriminator(dr.getGroupVersionKind(),
-          genericTemplateHandler.processTemplate(Utils.getName(spec), primary, context),
+          genericTemplateHandler.processTemplate(Utils.getName(spec), primary, false, context),
           targetNamespace.orElse(null)));
     }
 
@@ -267,10 +267,11 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue>, ErrorSta
     targetRelatedResources.forEach(r -> {
       var relatedResources = Utils.getRelatedResources(primary, r, context);
 
-      var template = r.getStatusPatchTemplate() != null ? r.getStatusPatchTemplate()
-          : Serialization.asYaml(r.getStatusPatch());
+      var objectTemplate = r.getStatusPatch() != null;
+      var template =
+          objectTemplate ? Serialization.asYaml(r.getStatusPatch()) : r.getStatusPatchTemplate();
       var resultTemplate =
-          genericTemplateHandler.processTemplate(actualData, template);
+          genericTemplateHandler.processTemplate(actualData, template, objectTemplate);
       var statusObjectMap = GenericTemplateHandler.parseTemplateToMapObject(resultTemplate);
       relatedResources.forEach((n, kr) -> {
         kr.setAdditionalProperty("status", statusObjectMap);

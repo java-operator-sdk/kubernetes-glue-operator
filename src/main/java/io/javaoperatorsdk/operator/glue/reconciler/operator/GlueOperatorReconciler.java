@@ -144,9 +144,10 @@ public class GlueOperatorReconciler
     if (glueMeta != null) {
       // optimize
       var data = Map.of(PARENT_RELATED_RESOURCE_NAME, parent);
-      var glueName = genericTemplateHandler.processInputAndTemplate(data, glueMeta.getName());
+      var glueName =
+          genericTemplateHandler.processInputAndTemplate(data, glueMeta.getName(), false);
       var glueNamespace =
-          genericTemplateHandler.processInputAndTemplate(data, glueMeta.getNamespace());
+          genericTemplateHandler.processInputAndTemplate(data, glueMeta.getNamespace(), false);
       objectMetaBuilder.withName(glueName);
       objectMetaBuilder.withNamespace(glueNamespace);
     } else {

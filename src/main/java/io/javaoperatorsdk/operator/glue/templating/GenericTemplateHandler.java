@@ -23,22 +23,31 @@ public class GenericTemplateHandler {
   private static final ObjectMapper objectMapper = new ObjectMapper();
   private static final Engine engine = Engine.builder().addDefaults().build();
 
-  public String processTemplate(Map<String, Map<?, ?>> data, String template) {
+  public String processTemplate(Map<String, Map<?, ?>> data, String template,
+      boolean objectTemplate) {
+    if (objectTemplate) {
+      template = handleDoubleCurlyBrackets(template);
+    }
     Template parsedTemplate = engine.parse(template);
     return parsedTemplate.data(data).render();
   }
 
-  public String processInputAndTemplate(Map<String, GenericKubernetesResource> data,
-      String template) {
-    Map<String, Map<?, ?>> res =
-        genericKubernetesResourceDataToGenericData(data);
-    return processTemplate(res, template);
+  private String handleDoubleCurlyBrackets(String template) {
+    template = template.replace("\"{{", "{");
+    return template.replace("}}\n", "}");
   }
 
-  public String processTemplate(String template, Glue primary,
+  public String processInputAndTemplate(Map<String, GenericKubernetesResource> data,
+      String template, boolean objectTemplate) {
+    Map<String, Map<?, ?>> res =
+        genericKubernetesResourceDataToGenericData(data);
+    return processTemplate(res, template, objectTemplate);
+  }
+
+  public String processTemplate(String template, Glue primary, boolean objectTemplate,
       Context<Glue> context) {
     var data = createDataWithResources(primary, context);
-    return processTemplate(data, template);
+    return processTemplate(data, template, objectTemplate);
   }
 
   private static Map<String, Map<?, ?>> genericKubernetesResourceDataToGenericData(

@@ -55,10 +55,10 @@ public class GenericDependentResource
   @Override
   protected GenericKubernetesResource desired(Glue primary,
       Context<Glue> context) {
+    boolean objectTemplate = desired != null;
+    var template = objectTemplate ? Serialization.asYaml(desired) : desiredTemplate;
 
-    var template = desired == null ? desiredTemplate : Serialization.asYaml(desired);
-
-    var res = genericTemplateHandler.processTemplate(template, primary, context);
+    var res = genericTemplateHandler.processTemplate(template, primary, objectTemplate, context);
     var resultDesired = Serialization.unmarshal(res, GenericKubernetesResource.class);
 
     resultDesired.getMetadata().getAnnotations()

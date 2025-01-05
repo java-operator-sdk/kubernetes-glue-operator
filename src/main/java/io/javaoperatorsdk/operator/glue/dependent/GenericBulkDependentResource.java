@@ -29,7 +29,7 @@ public class GenericBulkDependentResource extends
   public Map<String, GenericKubernetesResource> desiredResources(Glue primary,
       Context<Glue> context) {
 
-    var res = genericTemplateHandler.processTemplate(desiredTemplate, primary, context);
+    var res = genericTemplateHandler.processTemplate(desiredTemplate, primary, false, context);
     var desiredList = Serialization.unmarshal(res, GenericKubernetesResourceList.class).getItems();
     desiredList.forEach(r -> {
       r.getMetadata().getAnnotations()
