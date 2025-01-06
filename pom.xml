@@ -24,6 +24,7 @@
     <qosdk.version>6.6.8</qosdk.version>
     <assertj.version>3.27.1</assertj.version>
     <spotless.version>2.43.0</spotless.version>
+    <chicory.version>1.0.0</chicory.version>
   </properties>
 
   <dependencyManagement>
@@ -39,6 +40,13 @@
         <groupId>io.quarkiverse.operatorsdk</groupId>
         <artifactId>quarkus-operator-sdk-bom</artifactId>
         <version>${qosdk.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.dylibso.chicory</groupId>
+        <artifactId>bom</artifactId>
+        <version>${chicory.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -74,6 +82,14 @@
       <version>${fabric8-client.version}</version>
     </dependency>
     <dependency>
+      <groupId>com.dylibso.chicory</groupId>
+      <artifactId>runtime</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.dylibso.chicory</groupId>
+      <artifactId>wasi</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.awaitility</groupId>
       <artifactId>awaitility</artifactId>
       <scope>test</scope>
@@ -87,23 +103,6 @@
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-container-image-jib</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.graalvm.polyglot</groupId>
-      <artifactId>polyglot</artifactId>
-      <version>${graalvm.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.graalvm.js</groupId>
-      <artifactId>js-scriptengine</artifactId>
-      <version>${graalvm.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.graalvm.polyglot</groupId>
-      <artifactId>js-community</artifactId>
-      <version>${graalvm.version}</version>
-      <type>pom</type>
-      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.bouncycastle</groupId>
@@ -207,6 +206,23 @@
         </executions>
       </plugin>
 
+      <plugin>
+        <groupId>com.dylibso.chicory</groupId>
+        <artifactId>aot-maven-plugin-experimental</artifactId>
+        <version>${chicory.version}</version>
+        <executions>
+          <execution>
+            <id>quickJs</id>
+            <goals>
+              <goal>wasm-aot-gen</goal>
+            </goals>
+            <configuration>
+              <name>io.javaoperatorsdk.operator.glue.wasm.QuickJs</name>
+              <wasmFile>src/main/resources/wasm/quickjs-provider.wasm</wasmFile>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 
