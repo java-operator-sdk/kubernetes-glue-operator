@@ -140,6 +140,7 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue>, ErrorSta
   private UpdateControl<Glue> removeErrorMessageFromGlueStatusIfPresent(Glue primary) {
     if (primary.getStatus() != null && primary.getStatus().getErrorMessage() != null) {
       primary.getStatus().setErrorMessage(null);
+      primary.getMetadata().setResourceVersion(null);
       return UpdateControl.patchStatus(primary);
     } else {
       return UpdateControl.noUpdate();
@@ -274,8 +275,10 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue>, ErrorSta
           genericTemplateHandler.processTemplate(actualData, template, objectTemplate);
       var statusObjectMap = GenericTemplateHandler.parseTemplateToMapObject(resultTemplate);
       relatedResources.forEach((n, kr) -> {
-        kr.setAdditionalProperty("status", statusObjectMap);
-        context.getClient().resource(kr).patchStatus();
+        if (kr != null) {
+          kr.setAdditionalProperty("status", statusObjectMap);
+          context.getClient().resource(kr).patchStatus();
+        }
       });
     });
 
