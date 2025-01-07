@@ -23,7 +23,7 @@
     <mokito.version>5.11.0</mokito.version>
     <qosdk.version>6.6.8</qosdk.version>
     <assertj.version>3.27.1</assertj.version>
-    <spotless.version>2.43.0</spotless.version>
+    <spotless.version>2.44.0</spotless.version>
   </properties>
 
   <dependencyManagement>
