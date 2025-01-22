@@ -19,7 +19,7 @@
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     <fabric8-client.version>6.13.1</fabric8-client.version>
     <quarkus.version>3.8.3</quarkus.version>
-    <graalvm.version>24.1.1</graalvm.version>
+    <graalvm.version>24.1.2</graalvm.version>
     <mokito.version>5.11.0</mokito.version>
     <qosdk.version>6.6.8</qosdk.version>
     <assertj.version>3.27.3</assertj.version>
