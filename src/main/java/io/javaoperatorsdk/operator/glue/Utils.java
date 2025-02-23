@@ -66,7 +66,7 @@ public class Utils {
     var es =
         (InformerEventSource<GenericKubernetesResource, Glue>) context
             .eventSourceRetriever()
-            .getResourceEventSourceFor(GenericKubernetesResource.class, gvk.toString());
+            .getEventSourceFor(GenericKubernetesResource.class, gvk.toString());
 
     var namespace = relatedResourceSpec.isClusterScoped() ? null
         : relatedResourceSpec.getNamespace() == null ? glue.getMetadata().getNamespace()

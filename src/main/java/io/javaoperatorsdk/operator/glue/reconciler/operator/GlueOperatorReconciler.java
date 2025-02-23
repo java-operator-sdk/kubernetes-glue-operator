@@ -10,7 +10,7 @@ import io.fabric8.kubernetes.api.model.GenericKubernetesResource;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
 import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
-import io.javaoperatorsdk.operator.api.config.informer.InformerConfiguration;
+import io.javaoperatorsdk.operator.api.config.informer.InformerEventSourceConfiguration;
 import io.javaoperatorsdk.operator.api.reconciler.*;
 import io.javaoperatorsdk.operator.glue.ControllerConfig;
 import io.javaoperatorsdk.operator.glue.GlueException;
@@ -33,8 +33,8 @@ import jakarta.annotation.PostConstruct;
 
 @ControllerConfiguration(name = GlueOperatorReconciler.GLUE_OPERATOR_RECONCILER_NAME)
 public class GlueOperatorReconciler
-    implements Reconciler<GlueOperator>, EventSourceInitializer<GlueOperator>,
-    Cleaner<GlueOperator>, ErrorStatusHandler<GlueOperator> {
+    implements Reconciler<GlueOperator>,
+    Cleaner<GlueOperator> {
 
   private static final Logger log = LoggerFactory.getLogger(GlueOperatorReconciler.class);
 
@@ -177,13 +177,15 @@ public class GlueOperatorReconciler
     try {
       es = (InformerEventSource<GenericKubernetesResource, GlueOperator>) context
           .eventSourceRetriever()
-          .getResourceEventSourceFor(GenericKubernetesResource.class, gvk.toString());
+          .getEventSourceFor(GenericKubernetesResource.class, gvk.toString());
       es.start();
     } catch (IllegalArgumentException e) {
-      var configBuilder = InformerConfiguration.from(gvk,
-          context.eventSourceRetriever().eventSourceContextForDynamicRegistration())
+      var configBuilder = InformerEventSourceConfiguration.from(gvk, GlueOperator.class)
+          .withName(gvk.toString())
           .withSecondaryToPrimaryMapper(
               resource -> Set.of(ResourceID.fromResource(glueOperator)));
+
+
 
       if (spec.getParent().getLabelSelector() != null) {
         configBuilder.withLabelSelector(spec.getParent().getLabelSelector());
@@ -191,20 +193,21 @@ public class GlueOperatorReconciler
 
       es = new InformerEventSource<>(configBuilder.build(),
           context.eventSourceRetriever().eventSourceContextForDynamicRegistration());
-      context.eventSourceRetriever().dynamicallyRegisterEventSource(gvk.toString(), es);
+      context.eventSourceRetriever().dynamicallyRegisterEventSource(es);
     }
     return es;
   }
 
   @Override
-  public Map<String, EventSource> prepareEventSources(
+  public List<EventSource<?, GlueOperator>> prepareEventSources(
       EventSourceContext<GlueOperator> eventSourceContext) {
     glueEventSource = new InformerEventSource<>(
-        InformerConfiguration.from(Glue.class, eventSourceContext)
+        InformerEventSourceConfiguration.from(Glue.class, GlueOperator.class)
+            .withName("GlueEventSource")
             .withLabelSelector(FOR_GLUE_OPERATOR_LABEL_KEY + "=" + FOR_GLUE_OPERATOR_LABEL_VALUE)
             .build(),
         eventSourceContext);
-    return EventSourceInitializer.nameEventSources(glueEventSource);
+    return List.of(glueEventSource);
   }
 
   @Override

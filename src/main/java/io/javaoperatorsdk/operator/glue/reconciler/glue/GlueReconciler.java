@@ -24,11 +24,9 @@ import io.javaoperatorsdk.operator.glue.customresource.glue.condition.ReadyCondi
 import io.javaoperatorsdk.operator.glue.dependent.GCGenericBulkDependentResource;
 import io.javaoperatorsdk.operator.glue.dependent.GCGenericDependentResource;
 import io.javaoperatorsdk.operator.glue.dependent.GenericDependentResource;
-import io.javaoperatorsdk.operator.glue.dependent.GenericResourceDiscriminator;
 import io.javaoperatorsdk.operator.glue.reconciler.ValidationAndErrorHandler;
 import io.javaoperatorsdk.operator.glue.reconciler.operator.GlueOperatorReconciler;
 import io.javaoperatorsdk.operator.glue.templating.GenericTemplateHandler;
-import io.javaoperatorsdk.operator.processing.dependent.BulkDependentResource;
 import io.javaoperatorsdk.operator.processing.dependent.workflow.Condition;
 import io.javaoperatorsdk.operator.processing.dependent.workflow.KubernetesResourceDeletedCondition;
 import io.javaoperatorsdk.operator.processing.dependent.workflow.WorkflowBuilder;
@@ -38,7 +36,7 @@ import static io.javaoperatorsdk.operator.glue.reconciler.operator.GlueOperatorR
 import static io.javaoperatorsdk.operator.glue.reconciler.operator.GlueOperatorReconciler.PARENT_RELATED_RESOURCE_NAME;
 
 @ControllerConfiguration(name = GlueReconciler.GLUE_RECONCILER_NAME)
-public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue>, ErrorStatusHandler<Glue> {
+public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue> {
 
   private static final Logger log = LoggerFactory.getLogger(GlueReconciler.class);
   public static final String DEPENDENT_NAME_ANNOTATION_KEY =
@@ -107,7 +105,7 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue>, ErrorSta
       return DeleteControl.noFinalizerRemoval();
     } else {
       removeFinalizerForParent(primary, context);
-      actualWorkflow.getDependentResourcesByNameWithoutActivationCondition().forEach((n, dr) -> {
+      actualWorkflow.getDependentResourcesWithoutActivationCondition().forEach(dr -> {
         var genericDependentResource = (GenericDependentResource) dr;
         informerRegister.deRegisterInformer(genericDependentResource.getGroupVersionKind(),
             primary, context);
@@ -201,55 +199,51 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue>, ErrorSta
         targetNamespace.map(n -> n.trim().equals(primary.getMetadata().getNamespace().trim()))
             .orElse(true);
 
-    var dr = createDependentResource(spec, leafDependent, resourceInSameNamespaceAsPrimary);
+    var name = genericTemplateHandler.processTemplate(Utils.getName(spec), primary, false, context);
+    var dr = createDependentResource(name, spec, leafDependent, resourceInSameNamespaceAsPrimary,
+        targetNamespace.orElse(null));
     var gvk = dr.getGroupVersionKind();
 
-    if (!(dr instanceof BulkDependentResource<?, ?>)) {
-      dr.setResourceDiscriminator(new GenericResourceDiscriminator(dr.getGroupVersionKind(),
-          genericTemplateHandler.processTemplate(Utils.getName(spec), primary, false, context),
-          targetNamespace.orElse(null)));
-    }
-
     var es = informerRegister.registerInformer(context, gvk, primary);
-    dr.configureWith(es);
+    dr.setEventSource(es);
 
-    builder.addDependentResource(dr);
-    spec.getDependsOn().forEach(s -> builder.dependsOn(genericDependentResourceMap.get(s)));
-    // if a resources does not depend on another there is no reason to add cleanup condition
+    var nodeBuilder = builder.addDependentResourceAndConfigure(dr);
+    spec.getDependsOn().forEach(s -> nodeBuilder.dependsOn(genericDependentResourceMap.get(s)));
+    // if resources do not depend on another, there is no reason to add cleanup condition
     if (!spec.getDependsOn().isEmpty()) {
-      builder.withDeletePostcondition(deletePostCondition);
+      nodeBuilder.withDeletePostcondition(deletePostCondition);
     }
     genericDependentResourceMap.put(spec.getName(), dr);
 
     Optional.ofNullable(spec.getReadyPostCondition())
-        .ifPresent(c -> builder.withReadyPostcondition(toCondition(c)));
+        .ifPresent(c -> nodeBuilder.withReadyPostcondition(toCondition(c)));
     Optional.ofNullable(spec.getCondition())
-        .ifPresent(c -> builder.withReconcilePrecondition(toCondition(c)));
+        .ifPresent(c -> nodeBuilder.withReconcilePrecondition(toCondition(c)));
   }
 
-  private GenericDependentResource createDependentResource(DependentResourceSpec spec,
-      boolean leafDependent, Boolean resourceInSameNamespaceAsPrimary) {
+  private GenericDependentResource createDependentResource(String name, DependentResourceSpec spec,
+      boolean leafDependent, Boolean resourceInSameNamespaceAsPrimary, String namespace) {
 
     if (leafDependent && resourceInSameNamespaceAsPrimary && !spec.isClusterScoped()) {
       return spec.getResourceTemplate() != null
           ? spec.getBulk()
               ? new GCGenericBulkDependentResource(genericTemplateHandler,
                   spec.getResourceTemplate(),
-                  spec.getName(),
+                  name,
                   spec.isClusterScoped(), spec.getMatcher())
               : new GCGenericDependentResource(genericTemplateHandler, spec.getResourceTemplate(),
-                  spec.getName(),
+                  name, namespace,
                   spec.isClusterScoped(), spec.getMatcher())
           : new GCGenericDependentResource(genericTemplateHandler, spec.getResource(),
-              spec.getName(),
+              name, namespace,
               spec.isClusterScoped(), spec.getMatcher());
     } else {
       return spec.getResourceTemplate() != null
           ? new GenericDependentResource(genericTemplateHandler,
-              spec.getResourceTemplate(), spec.getName(), spec.isClusterScoped(),
+              spec.getResourceTemplate(), name, namespace, spec.isClusterScoped(),
               spec.getMatcher())
           : new GenericDependentResource(genericTemplateHandler,
-              spec.getResource(), spec.getName(), spec.isClusterScoped(), spec.getMatcher());
+              spec.getResource(), name, namespace, spec.isClusterScoped(), spec.getMatcher());
     }
   }
 

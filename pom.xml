@@ -18,10 +18,10 @@
     <sonar.organization>java-operator-sdk</sonar.organization>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     <fabric8-client.version>7.1.0</fabric8-client.version>
-    <quarkus.version>3.17.4</quarkus.version>
+    <quarkus.version>3.19.0</quarkus.version>
     <graalvm.version>24.1.2</graalvm.version>
     <mokito.version>5.11.0</mokito.version>
-    <qosdk.version>7.0.1</qosdk.version>
+    <qosdk.version>7.1.0</qosdk.version>
     <assertj.version>3.27.3</assertj.version>
     <spotless.version>2.43.0</spotless.version>
   </properties>

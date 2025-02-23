@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.fabric8.kubernetes.api.model.GenericKubernetesResource;
-import io.javaoperatorsdk.operator.api.config.informer.InformerConfiguration;
+import io.javaoperatorsdk.operator.api.config.informer.InformerEventSourceConfiguration;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.glue.ControllerConfig;
 import io.javaoperatorsdk.operator.glue.Utils;
@@ -94,8 +94,9 @@ public class InformerRegister {
       markEventSource(gvk, glue);
     }
 
-    var configBuilder = InformerConfiguration.<GenericKubernetesResource>from(gvk)
-        .withSecondaryToPrimaryMapper(mapper);
+    var configBuilder = InformerEventSourceConfiguration.from(gvk, Glue.class)
+        .withSecondaryToPrimaryMapper(mapper)
+        .withName(gvk.toString());
     labelSelectorForGVK(gvk).ifPresent(ls -> {
       log.debug("Registering label selector: {} for informer for gvk: {}", ls, gvk);
       configBuilder.withLabelSelector(ls);
@@ -105,8 +106,7 @@ public class InformerRegister {
 
     return (InformerEventSource<GenericKubernetesResource, Glue>) context
         .eventSourceRetriever()
-        .dynamicallyRegisterEventSource(gvk.toString(), newInformer);
-
+        .dynamicallyRegisterEventSource(newInformer);
   }
 
   public synchronized void deRegisterInformer(GroupVersionKind groupVersionKind,

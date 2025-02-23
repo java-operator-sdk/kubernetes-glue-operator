@@ -1,5 +1,9 @@
 package io.javaoperatorsdk.operator.glue.dependent;
 
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+
 import io.fabric8.kubernetes.api.model.GenericKubernetesResource;
 import io.fabric8.kubernetes.client.utils.Serialization;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
@@ -23,16 +27,18 @@ public class GenericDependentResource
   protected final GenericKubernetesResource desired;
   protected final String desiredTemplate;
   protected final String name;
+  protected final String namespace;
   protected final boolean clusterScoped;
   protected final Matcher matcher;
 
   protected final GenericTemplateHandler genericTemplateHandler;
 
   public GenericDependentResource(GenericTemplateHandler genericTemplateHandler,
-      GenericKubernetesResource desired, String name,
+      GenericKubernetesResource desired, String name, String namespace,
       boolean clusterScoped, Matcher matcher) {
     super(new GroupVersionKind(desired.getApiVersion(), desired.getKind()));
     this.desired = desired;
+    this.namespace = namespace;
     this.matcher = matcher;
     this.desiredTemplate = null;
     this.name = name;
@@ -41,12 +47,14 @@ public class GenericDependentResource
   }
 
   public GenericDependentResource(GenericTemplateHandler genericTemplateHandler,
-      String desiredTemplate, String name, boolean clusterScoped, Matcher matcher) {
+      String desiredTemplate, String name, String namespace, boolean clusterScoped,
+      Matcher matcher) {
     super(new GroupVersionKind(Utils.getApiVersionFromTemplate(desiredTemplate),
         Utils.getKindFromTemplate(desiredTemplate)));
     this.genericTemplateHandler = genericTemplateHandler;
     this.name = name;
     this.desiredTemplate = desiredTemplate;
+    this.namespace = namespace;
     this.matcher = matcher;
     this.desired = null;
     this.clusterScoped = clusterScoped;
@@ -82,6 +90,31 @@ public class GenericDependentResource
       return super.match(actualResource, primary, context);
     } else {
       return Result.nonComputed(false);
+    }
+  }
+
+  @Override
+  protected Optional<GenericKubernetesResource> selectTargetSecondaryResource(
+      Set<GenericKubernetesResource> secondaryResources,
+      Glue primary,
+      Context<Glue> context) {
+
+    var res = context.getSecondaryResources(GenericKubernetesResource.class)
+        .stream()
+        .filter(r -> r.getKind().equals(getGroupVersionKind().getKind()) &&
+            r.getApiVersion().equals(getGroupVersionKind().apiVersion()) &&
+            r.getMetadata().getName().equals(name) &&
+            (namespace == null || Objects.equals(namespace, r.getMetadata().getNamespace())))
+        .toList();
+
+    if (res.size() > 1) {
+      throw new IllegalStateException("Multiple resources found for gvk: " + getGroupVersionKind()
+          + " name:" + name
+          + " namespace:" + namespace);
+    } else if (res.size() == 1) {
+      return Optional.of(res.get(0));
+    } else {
+      return Optional.empty();
     }
   }
 }

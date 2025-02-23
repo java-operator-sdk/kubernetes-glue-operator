@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import io.fabric8.kubernetes.api.model.GenericKubernetesResource;
+import io.javaoperatorsdk.operator.glue.customresource.operator.GlueOperator;
 import io.javaoperatorsdk.operator.processing.event.ResourceID;
 import io.javaoperatorsdk.operator.processing.event.source.SecondaryToPrimaryMapper;
 import io.javaoperatorsdk.operator.processing.event.source.informer.Mappers;
@@ -19,8 +20,8 @@ public class RelatedAndOwnedResourceSecondaryToPrimaryMapper
   @Override
   public Set<ResourceID> toPrimaryResourceIDs(GenericKubernetesResource resource) {
     // based on if GC or non GC dependent it can have different mapping
-    var res = Mappers.fromOwnerReferences(false).toPrimaryResourceIDs(resource);
-    res.addAll(Mappers.fromDefaultAnnotations().toPrimaryResourceIDs(resource));
+    var res = Mappers.fromOwnerReferences(GlueOperator.class, false).toPrimaryResourceIDs(resource);
+    res.addAll(Mappers.fromDefaultAnnotations(GlueOperator.class).toPrimaryResourceIDs(resource));
 
     // related resource mapping
     var idMapped = secondaryToPrimaryMap.get(
