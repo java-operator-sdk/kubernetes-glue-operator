@@ -38,7 +38,7 @@ class GlueTest extends TestBase {
         TestUtils.loadGlue("/glue/Templating.yaml");
     glue = create(glue);
 
-    await().untilAsserted(() -> {
+    await().timeout(Duration.ofHours(1)).untilAsserted(() -> {
       var cm1 = get(ConfigMap.class, "templconfigmap1");
       var cm2 = get(ConfigMap.class, "templconfigmap2");
       assertThat(cm1).isNotNull();

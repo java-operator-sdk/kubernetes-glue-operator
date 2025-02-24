@@ -221,7 +221,8 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue> {
         .ifPresent(c -> nodeBuilder.withReconcilePrecondition(toCondition(c)));
   }
 
-  private GenericDependentResource createDependentResource(String name, DependentResourceSpec spec,
+  private GenericDependentResource createDependentResource(String resourceName,
+      DependentResourceSpec spec,
       boolean leafDependent, Boolean resourceInSameNamespaceAsPrimary, String namespace) {
 
     if (leafDependent && resourceInSameNamespaceAsPrimary && !spec.isClusterScoped()) {
@@ -229,21 +230,23 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue> {
           ? spec.getBulk()
               ? new GCGenericBulkDependentResource(genericTemplateHandler,
                   spec.getResourceTemplate(),
-                  name,
+                  spec.getName(),
                   spec.isClusterScoped(), spec.getMatcher())
               : new GCGenericDependentResource(genericTemplateHandler, spec.getResourceTemplate(),
-                  name, namespace,
+                  spec.getName(), resourceName, namespace,
                   spec.isClusterScoped(), spec.getMatcher())
           : new GCGenericDependentResource(genericTemplateHandler, spec.getResource(),
-              name, namespace,
+              spec.getName(), resourceName, namespace,
               spec.isClusterScoped(), spec.getMatcher());
     } else {
       return spec.getResourceTemplate() != null
           ? new GenericDependentResource(genericTemplateHandler,
-              spec.getResourceTemplate(), name, namespace, spec.isClusterScoped(),
+              spec.getResourceTemplate(), spec.getName(), resourceName, namespace,
+              spec.isClusterScoped(),
               spec.getMatcher())
           : new GenericDependentResource(genericTemplateHandler,
-              spec.getResource(), name, namespace, spec.isClusterScoped(), spec.getMatcher());
+              spec.getResource(), spec.getName(), resourceName, namespace, spec.isClusterScoped(),
+              spec.getMatcher());
     }
   }
 

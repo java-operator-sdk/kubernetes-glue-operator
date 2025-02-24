@@ -10,14 +10,16 @@ public class GCGenericDependentResource extends GenericDependentResource
     implements GarbageCollected<Glue> {
 
   public GCGenericDependentResource(GenericTemplateHandler genericTemplateHandler,
-      GenericKubernetesResource desired, String name, String namespace,
+      GenericKubernetesResource desired, String name, String resourceName, String namespace,
       boolean clusterScoped, Matcher matcher) {
-    super(genericTemplateHandler, desired, name, namespace, clusterScoped, matcher);
+    super(genericTemplateHandler, desired, name, resourceName, namespace, clusterScoped, matcher);
   }
 
   public GCGenericDependentResource(GenericTemplateHandler genericTemplateHandler,
-      String desiredTemplate, String name, String namespace, boolean clusterScoped,
+      String desiredTemplate, String name, String resourceName, String namespace,
+      boolean clusterScoped,
       Matcher matcher) {
-    super(genericTemplateHandler, desiredTemplate, name, namespace, clusterScoped, matcher);
+    super(genericTemplateHandler, desiredTemplate, name, resourceName, namespace, clusterScoped,
+        matcher);
   }
 }

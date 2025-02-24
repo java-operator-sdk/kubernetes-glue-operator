@@ -27,6 +27,8 @@ public class GenericDependentResource
   protected final GenericKubernetesResource desired;
   protected final String desiredTemplate;
   protected final String name;
+  // resource name might be templated
+  protected final String resourceName;
   protected final String namespace;
   protected final boolean clusterScoped;
   protected final Matcher matcher;
@@ -34,7 +36,7 @@ public class GenericDependentResource
   protected final GenericTemplateHandler genericTemplateHandler;
 
   public GenericDependentResource(GenericTemplateHandler genericTemplateHandler,
-      GenericKubernetesResource desired, String name, String namespace,
+      GenericKubernetesResource desired, String name, String resourceName, String namespace,
       boolean clusterScoped, Matcher matcher) {
     super(new GroupVersionKind(desired.getApiVersion(), desired.getKind()));
     this.desired = desired;
@@ -42,17 +44,20 @@ public class GenericDependentResource
     this.matcher = matcher;
     this.desiredTemplate = null;
     this.name = name;
+    this.resourceName = resourceName;
     this.clusterScoped = clusterScoped;
     this.genericTemplateHandler = genericTemplateHandler;
   }
 
   public GenericDependentResource(GenericTemplateHandler genericTemplateHandler,
-      String desiredTemplate, String name, String namespace, boolean clusterScoped,
+      String desiredTemplate, String name, String resourceName, String namespace,
+      boolean clusterScoped,
       Matcher matcher) {
     super(new GroupVersionKind(Utils.getApiVersionFromTemplate(desiredTemplate),
         Utils.getKindFromTemplate(desiredTemplate)));
     this.genericTemplateHandler = genericTemplateHandler;
     this.name = name;
+    this.resourceName = resourceName;
     this.desiredTemplate = desiredTemplate;
     this.namespace = namespace;
     this.matcher = matcher;
@@ -103,7 +108,7 @@ public class GenericDependentResource
         .stream()
         .filter(r -> r.getKind().equals(getGroupVersionKind().getKind()) &&
             r.getApiVersion().equals(getGroupVersionKind().apiVersion()) &&
-            r.getMetadata().getName().equals(name) &&
+            r.getMetadata().getName().equals(resourceName) &&
             (namespace == null || Objects.equals(namespace, r.getMetadata().getNamespace())))
         .toList();
 
