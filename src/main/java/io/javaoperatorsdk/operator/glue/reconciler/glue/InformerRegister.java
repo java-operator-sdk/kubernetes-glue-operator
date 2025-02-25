@@ -97,13 +97,14 @@ public class InformerRegister {
     var configBuilder = InformerEventSourceConfiguration.from(gvk, Glue.class)
         .withSecondaryToPrimaryMapper(mapper)
         .withName(gvk.toString());
+    configBuilder.withName(gvk.toString());
     labelSelectorForGVK(gvk).ifPresent(ls -> {
       log.debug("Registering label selector: {} for informer for gvk: {}", ls, gvk);
       configBuilder.withLabelSelector(ls);
     });
 
     var newInformer = informerProducer.createInformer(configBuilder.build(), context);
-
+    log.debug("Registering informer for gvk: {}", gvk);
     return (InformerEventSource<GenericKubernetesResource, Glue>) context
         .eventSourceRetriever()
         .dynamicallyRegisterEventSource(newInformer);

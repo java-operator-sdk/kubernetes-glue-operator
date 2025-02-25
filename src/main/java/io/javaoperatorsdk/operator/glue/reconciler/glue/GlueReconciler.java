@@ -40,9 +40,9 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue> {
 
   private static final Logger log = LoggerFactory.getLogger(GlueReconciler.class);
   public static final String DEPENDENT_NAME_ANNOTATION_KEY =
-      "io.javaoperatorsdk.operator.resourceflow/name";
+      "io.javaoperatorsdk.operator.glue/resource-name";
   public static final String PARENT_GLUE_FINALIZER_PREFIX =
-      "io.javaoperatorsdk.operator.resourceflow.glue/";
+      "io.javaoperatorsdk.operator.glue/";
   public static final String GLUE_RECONCILER_NAME = "glue";
 
 
@@ -97,6 +97,7 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue> {
   @Override
   public DeleteControl cleanup(Glue primary, Context<Glue> context) {
 
+    registerRelatedResourceInformers(context, primary);
     var actualWorkflow = buildWorkflowAndRegisterInformers(primary, context);
     var result = actualWorkflow.cleanup(primary, context);
     result.throwAggregateExceptionIfErrorsPresent();
@@ -147,9 +148,8 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue> {
 
   private void registerRelatedResourceInformers(Context<Glue> context,
       Glue glue) {
-    glue.getSpec().getRelatedResources().forEach(r -> {
-      informerRegister.registerInformerForRelatedResource(context, glue, r);
-    });
+    glue.getSpec().getRelatedResources()
+        .forEach(r -> informerRegister.registerInformerForRelatedResource(context, glue, r));
   }
 
   // todo test
