@@ -10,6 +10,6 @@ import io.fabric8.kubernetes.model.annotation.Version;
 @Version("v1beta1")
 @ShortNames("go")
 public class GlueOperator
-    extends CustomResource<GlueOperatorSpec, ResourceFlowOperatorStatus>
+    extends CustomResource<GlueOperatorSpec, GlueOperatorStatus>
     implements Namespaced {
 }

@@ -24,7 +24,7 @@ import io.javaoperatorsdk.operator.glue.customresource.glue.condition.ReadyCondi
 import io.javaoperatorsdk.operator.glue.dependent.GCGenericBulkDependentResource;
 import io.javaoperatorsdk.operator.glue.dependent.GCGenericDependentResource;
 import io.javaoperatorsdk.operator.glue.dependent.GenericDependentResource;
-import io.javaoperatorsdk.operator.glue.reconciler.ValidationAndErrorHandler;
+import io.javaoperatorsdk.operator.glue.reconciler.ValidationAndStatusHandler;
 import io.javaoperatorsdk.operator.glue.reconciler.operator.GlueOperatorReconciler;
 import io.javaoperatorsdk.operator.glue.templating.GenericTemplateHandler;
 import io.javaoperatorsdk.operator.processing.dependent.workflow.Condition;
@@ -46,7 +46,7 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue> {
   public static final String GLUE_RECONCILER_NAME = "glue";
 
 
-  private final ValidationAndErrorHandler validationAndErrorHandler;
+  private final ValidationAndStatusHandler validationAndStatusHandler;
   private final InformerRegister informerRegister;
 
   private final KubernetesResourceDeletedCondition deletePostCondition =
@@ -54,10 +54,10 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue> {
 
   private final GenericTemplateHandler genericTemplateHandler;
 
-  public GlueReconciler(ValidationAndErrorHandler validationAndErrorHandler,
+  public GlueReconciler(ValidationAndStatusHandler validationAndStatusHandler,
       InformerRegister informerRegister,
       GenericTemplateHandler genericTemplateHandler) {
-    this.validationAndErrorHandler = validationAndErrorHandler;
+    this.validationAndStatusHandler = validationAndStatusHandler;
     this.informerRegister = informerRegister;
     this.genericTemplateHandler = genericTemplateHandler;
   }
@@ -78,7 +78,7 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue> {
     log.debug("Reconciling glue. name: {} namespace: {}",
         primary.getMetadata().getName(), primary.getMetadata().getNamespace());
 
-    validationAndErrorHandler.checkIfValidGlueSpec(primary.getSpec());
+    validationAndStatusHandler.checkIfValidGlueSpec(primary.getSpec());
 
     registerRelatedResourceInformers(context, primary);
     if (deletedGlueIfParentMarkedForDeletion(context, primary)) {
@@ -91,7 +91,7 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue> {
     informerRegister.deRegisterInformerOnResourceFlowChange(context, primary);
     result.throwAggregateExceptionIfErrorsPresent();
     patchRelatedResourcesStatus(context, primary);
-    return removeErrorMessageFromGlueStatusIfPresent(primary);
+    return validationAndStatusHandler.handleStatusUpdate(primary);
   }
 
   @Override
@@ -123,7 +123,7 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue> {
     if (resource.getStatus() == null) {
       resource.setStatus(new GlueStatus());
     }
-    return validationAndErrorHandler.updateStatusErrorMessage(e, resource);
+    return validationAndStatusHandler.updateStatusErrorMessage(e, resource);
   }
 
   private boolean deletedGlueIfParentMarkedForDeletion(Context<Glue> context, Glue primary) {
@@ -133,16 +133,6 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue> {
       return true;
     } else {
       return false;
-    }
-  }
-
-  private UpdateControl<Glue> removeErrorMessageFromGlueStatusIfPresent(Glue primary) {
-    if (primary.getStatus() != null && primary.getStatus().getErrorMessage() != null) {
-      primary.getStatus().setErrorMessage(null);
-      primary.getMetadata().setResourceVersion(null);
-      return UpdateControl.patchStatus(primary);
-    } else {
-      return UpdateControl.noUpdate();
     }
   }
 

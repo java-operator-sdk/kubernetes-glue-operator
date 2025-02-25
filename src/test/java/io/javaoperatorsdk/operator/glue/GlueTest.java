@@ -19,7 +19,7 @@ import io.fabric8.kubernetes.client.dsl.NonDeletingOperation;
 import io.javaoperatorsdk.operator.glue.customresource.TestCustomResource;
 import io.javaoperatorsdk.operator.glue.customresource.glue.DependentResourceSpec;
 import io.javaoperatorsdk.operator.glue.customresource.glue.Glue;
-import io.javaoperatorsdk.operator.glue.reconciler.ValidationAndErrorHandler;
+import io.javaoperatorsdk.operator.glue.reconciler.ValidationAndStatusHandler;
 import io.quarkus.test.junit.QuarkusTest;
 
 import static io.javaoperatorsdk.operator.glue.TestUtils.INITIAL_RECONCILE_WAIT_TIMEOUT;
@@ -241,7 +241,7 @@ class GlueTest extends TestBase {
 
       assertThat(actualGlue.getStatus()).isNotNull();
       Assertions.assertThat(actualGlue.getStatus().getErrorMessage())
-          .startsWith(ValidationAndErrorHandler.NON_UNIQUE_NAMES_FOUND_PREFIX);
+          .startsWith(ValidationAndStatusHandler.NON_UNIQUE_NAMES_FOUND_PREFIX);
     });
   }
 

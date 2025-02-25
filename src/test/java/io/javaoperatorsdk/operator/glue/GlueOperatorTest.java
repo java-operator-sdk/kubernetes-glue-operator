@@ -18,7 +18,7 @@ import io.javaoperatorsdk.operator.glue.customresource.glue.Glue;
 import io.javaoperatorsdk.operator.glue.customresource.operator.GlueOperator;
 import io.javaoperatorsdk.operator.glue.customresource.operator.GlueOperatorSpec;
 import io.javaoperatorsdk.operator.glue.customresource.operator.Parent;
-import io.javaoperatorsdk.operator.glue.reconciler.ValidationAndErrorHandler;
+import io.javaoperatorsdk.operator.glue.reconciler.ValidationAndStatusHandler;
 import io.javaoperatorsdk.operator.glue.reconciler.operator.GlueOperatorReconciler;
 import io.quarkus.test.junit.QuarkusTest;
 
@@ -162,7 +162,7 @@ class GlueOperatorTest extends TestBase {
 
       assertThat(actual.getStatus()).isNotNull();
       assertThat(actual.getStatus().getErrorMessage())
-          .startsWith(ValidationAndErrorHandler.NON_UNIQUE_NAMES_FOUND_PREFIX);
+          .startsWith(ValidationAndStatusHandler.NON_UNIQUE_NAMES_FOUND_PREFIX);
     });
   }
 

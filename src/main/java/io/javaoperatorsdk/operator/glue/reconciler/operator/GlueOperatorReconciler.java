@@ -19,9 +19,9 @@ import io.javaoperatorsdk.operator.glue.customresource.glue.GlueSpec;
 import io.javaoperatorsdk.operator.glue.customresource.glue.RelatedResourceSpec;
 import io.javaoperatorsdk.operator.glue.customresource.operator.GlueOperator;
 import io.javaoperatorsdk.operator.glue.customresource.operator.GlueOperatorSpec;
+import io.javaoperatorsdk.operator.glue.customresource.operator.GlueOperatorStatus;
 import io.javaoperatorsdk.operator.glue.customresource.operator.Parent;
-import io.javaoperatorsdk.operator.glue.customresource.operator.ResourceFlowOperatorStatus;
-import io.javaoperatorsdk.operator.glue.reconciler.ValidationAndErrorHandler;
+import io.javaoperatorsdk.operator.glue.reconciler.ValidationAndStatusHandler;
 import io.javaoperatorsdk.operator.glue.reconciler.glue.GlueReconciler;
 import io.javaoperatorsdk.operator.glue.templating.GenericTemplateHandler;
 import io.javaoperatorsdk.operator.processing.GroupVersionKind;
@@ -49,7 +49,7 @@ public class GlueOperatorReconciler
   Optional<String> glueLabelSelector;
 
   private final ControllerConfig controllerConfig;
-  private final ValidationAndErrorHandler validationAndErrorHandler;
+  private final ValidationAndStatusHandler validationAndErrorHandler;
   private final GenericTemplateHandler genericTemplateHandler;
 
   private Map<String, String> defaultGlueLabels;
@@ -57,10 +57,10 @@ public class GlueOperatorReconciler
   private InformerEventSource<Glue, GlueOperator> glueEventSource;
 
   public GlueOperatorReconciler(ControllerConfig controllerConfig,
-      ValidationAndErrorHandler validationAndErrorHandler,
+      ValidationAndStatusHandler validationAndStatusHandler,
       GenericTemplateHandler genericTemplateHandler) {
     this.controllerConfig = controllerConfig;
-    this.validationAndErrorHandler = validationAndErrorHandler;
+    this.validationAndErrorHandler = validationAndStatusHandler;
     this.genericTemplateHandler = genericTemplateHandler;
   }
 
@@ -96,7 +96,7 @@ public class GlueOperatorReconciler
       }
     });
 
-    return UpdateControl.noUpdate();
+    return validationAndErrorHandler.handleStatusUpdate(glueOperator);
   }
 
   private Glue createGlue(GenericKubernetesResource targetParentResource,
@@ -213,7 +213,7 @@ public class GlueOperatorReconciler
   public ErrorStatusUpdateControl<GlueOperator> updateErrorStatus(GlueOperator resource,
       Context<GlueOperator> context, Exception e) {
     if (resource.getStatus() == null) {
-      resource.setStatus(new ResourceFlowOperatorStatus());
+      resource.setStatus(new GlueOperatorStatus());
     }
     return validationAndErrorHandler.updateStatusErrorMessage(e, resource);
   }
