@@ -40,6 +40,9 @@ public class ValidationAndErrorHandler {
       return ErrorStatusUpdateControl.patchStatus(resource).withNoRetry();
     } else {
       var message = e.getMessage();
+      if (message == null) {
+        message = e.getClass().getName();
+      }
       if (message.length() > MAX_MESSAGE_SIZE) {
         message = message.substring(0, MAX_MESSAGE_SIZE) + "...";
       }

@@ -25,6 +25,7 @@ import io.javaoperatorsdk.operator.glue.reconciler.ValidationAndErrorHandler;
 import io.javaoperatorsdk.operator.glue.reconciler.glue.GlueReconciler;
 import io.javaoperatorsdk.operator.glue.templating.GenericTemplateHandler;
 import io.javaoperatorsdk.operator.processing.GroupVersionKind;
+import io.javaoperatorsdk.operator.processing.event.NoEventSourceForClassException;
 import io.javaoperatorsdk.operator.processing.event.ResourceID;
 import io.javaoperatorsdk.operator.processing.event.source.EventSource;
 import io.javaoperatorsdk.operator.processing.event.source.informer.InformerEventSource;
@@ -179,13 +180,11 @@ public class GlueOperatorReconciler
           .eventSourceRetriever()
           .getEventSourceFor(GenericKubernetesResource.class, gvk.toString());
       es.start();
-    } catch (IllegalArgumentException e) {
+    } catch (NoEventSourceForClassException e) {
       var configBuilder = InformerEventSourceConfiguration.from(gvk, GlueOperator.class)
           .withName(gvk.toString())
           .withSecondaryToPrimaryMapper(
               resource -> Set.of(ResourceID.fromResource(glueOperator)));
-
-
 
       if (spec.getParent().getLabelSelector() != null) {
         configBuilder.withLabelSelector(spec.getParent().getLabelSelector());
