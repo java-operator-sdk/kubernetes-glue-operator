@@ -101,10 +101,11 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue> {
     var actualWorkflow = buildWorkflowAndRegisterInformers(primary, context);
     var result = actualWorkflow.cleanup(primary, context);
     result.throwAggregateExceptionIfErrorsPresent();
-
-    if (!result.allPostConditionsMet()) {
+    if (!result.allPostConditionsMet() && result.getDeleteCalledOnDependents()
+        .size() < actualWorkflow.getDependentResourcesByName().size()) {
       return DeleteControl.noFinalizerRemoval();
     } else {
+      log.debug("All cleanup post conditions met for glue: {} ", primary.getMetadata().getName());
       removeFinalizerForParent(primary, context);
       actualWorkflow.getDependentResourcesWithoutActivationCondition().forEach(dr -> {
         var genericDependentResource = (GenericDependentResource) dr;

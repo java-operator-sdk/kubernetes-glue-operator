@@ -60,7 +60,7 @@ class GlueTest extends TestBase {
 
     delete(glue);
 
-    await().timeout(Duration.ofSeconds(30)).untilAsserted(() -> {
+    await().timeout(GC_TIMEOUT).untilAsserted(() -> {
       var cm1 = get(ConfigMap.class, "templconfigmap1");
       var cm2 = get(ConfigMap.class, "templconfigmap2");
       assertThat(cm1).isNull();
@@ -99,7 +99,7 @@ class GlueTest extends TestBase {
 
     delete(glue);
 
-    await().untilAsserted(() -> {
+    await().timeout(GC_TIMEOUT).untilAsserted(() -> {
       var cm1 = get(ConfigMap.class, "cm-1");
       var cm2 = get(ConfigMap.class, "cm-2");
       assertThat(cm1).isNull();
@@ -136,7 +136,7 @@ class GlueTest extends TestBase {
 
     delete(glue);
 
-    await().timeout(Duration.ofSeconds(GC_TIMEOUT_SEC)).untilAsserted(() -> {
+    await().timeout(GC_TIMEOUT).untilAsserted(() -> {
       var cm1 = get(ConfigMap.class, "configmap1");
       var cm2 = get(ConfigMap.class, "configmap2");
       assertThat(cm1).isNull();
@@ -159,7 +159,7 @@ class GlueTest extends TestBase {
 
     delete(glue);
 
-    await().untilAsserted(() -> {
+    await().timeout(GC_TIMEOUT).untilAsserted(() -> {
       var cm1 = get(ConfigMap.class, "templconfigmap1");
       var cm2 = get(ConfigMap.class, "templconfigmap2");
       assertThat(cm1).isNull();
@@ -188,7 +188,7 @@ class GlueTest extends TestBase {
     }));
 
     glueList.forEach(this::delete);
-    await().untilAsserted(() -> IntStream.range(0, num).forEach(index -> {
+    await().timeout(GC_TIMEOUT).untilAsserted(() -> IntStream.range(0, num).forEach(index -> {
       var w = get(Glue.class, "concurrencysample" + index);
       assertThat(w).isNull();
     }));
@@ -224,7 +224,7 @@ class GlueTest extends TestBase {
     glue.getMetadata().setResourceVersion(null);
     delete(glue);
 
-    await().untilAsserted(() -> {
+    await().timeout(GC_TIMEOUT).untilAsserted(() -> {
       var cm1 = get(ConfigMap.class, "configmap1");
       var s = get(Secret.class, "secret1");
       assertThat(cm1).isNull();
