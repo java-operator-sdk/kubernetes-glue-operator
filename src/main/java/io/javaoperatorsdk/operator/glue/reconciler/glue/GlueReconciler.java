@@ -97,12 +97,19 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue> {
   @Override
   public DeleteControl cleanup(Glue primary, Context<Glue> context) {
 
+    log.debug("Cleanup for Glue. Name: {} namespace: {}", primary.getMetadata().getName(),
+        primary.getMetadata().getNamespace());
+
     registerRelatedResourceInformers(context, primary);
     var actualWorkflow = buildWorkflowAndRegisterInformers(primary, context);
     var result = actualWorkflow.cleanup(primary, context);
     result.throwAggregateExceptionIfErrorsPresent();
-    if (!result.allPostConditionsMet() && result.getDeleteCalledOnDependents()
-        .size() < actualWorkflow.getDependentResourcesByName().size()) {
+
+    var deletableResourceCount = actualWorkflow.getDependentResourcesByName()
+        .entrySet().stream().filter(e -> e.getValue().isDeletable()).count();
+
+    if (!result.allPostConditionsMet() || result.getDeleteCalledOnDependents()
+        .size() < deletableResourceCount) {
       return DeleteControl.noFinalizerRemoval();
     } else {
       removeFinalizerForParent(primary, context);
