@@ -110,6 +110,7 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue> {
     var deletableResourceCount = actualWorkflow.getDependentResourcesByName()
         .entrySet().stream().filter(e -> e.getValue().isDeletable()).count();
 
+    // add this logic to josdk with deleted dependents
     if (!result.allPostConditionsMet() || result.getDeleteCalledOnDependents()
         .size() < deletableResourceCount) {
       return DeleteControl.noFinalizerRemoval();
@@ -117,7 +118,8 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue> {
       removeFinalizerForParent(primary, context);
       actualWorkflow.getDependentResourcesWithoutActivationCondition().forEach(dr -> {
         var genericDependentResource = (GenericDependentResource) dr;
-        informerRegister.deRegisterInformer(genericDependentResource.getGroupVersionKind(),
+        informerRegister.deRegisterInformer(
+            toGVKIfGVKP(genericDependentResource.getGroupVersionKind()),
             primary, context);
       });
       informerRegister.deRegisterInformerForRelatedResources(primary, context);
@@ -201,12 +203,7 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue> {
     var name = genericTemplateHandler.processTemplate(Utils.getName(spec), primary, false, context);
     var dr = createDependentResource(name, spec, leafDependent, resourceInSameNamespaceAsPrimary,
         targetNamespace.orElse(null));
-    GroupVersionKind gvk = dr.getGroupVersionKind();
-    // remove when fixed in josdk
-    if (gvk instanceof GroupVersionKindPlural gvkp) {
-      gvk = new GroupVersionKind(gvkp.getGroup(), gvkp.getVersion(), gvkp.getKind());
-    }
-
+    GroupVersionKind gvk = toGVKIfGVKP(dr.getGroupVersionKind());
     var es = informerRegister.registerInformer(context, gvk, primary);
     dr.setEventSource(es);
 
@@ -372,6 +369,15 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue> {
         glue.getMetadata().getLabels().get(GlueOperatorReconciler.FOR_GLUE_OPERATOR_LABEL_KEY);
     return FOR_GLUE_OPERATOR_LABEL_VALUE.equals(labelValue);
 
+  }
+
+  // remove if the conversion not happens in josdk anymore
+  // https://github.com/operator-framework/java-operator-sdk/pull/2726
+  private static GroupVersionKind toGVKIfGVKP(GroupVersionKind gvk) {
+    if (gvk instanceof GroupVersionKindPlural gvkp) {
+      gvk = new GroupVersionKind(gvkp.getGroup(), gvkp.getVersion(), gvkp.getKind());
+    }
+    return gvk;
   }
 
 }
