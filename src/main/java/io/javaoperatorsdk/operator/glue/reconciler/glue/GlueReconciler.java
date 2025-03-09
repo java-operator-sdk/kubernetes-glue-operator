@@ -27,6 +27,8 @@ import io.javaoperatorsdk.operator.glue.dependent.GenericDependentResource;
 import io.javaoperatorsdk.operator.glue.reconciler.ValidationAndStatusHandler;
 import io.javaoperatorsdk.operator.glue.reconciler.operator.GlueOperatorReconciler;
 import io.javaoperatorsdk.operator.glue.templating.GenericTemplateHandler;
+import io.javaoperatorsdk.operator.processing.GroupVersionKind;
+import io.javaoperatorsdk.operator.processing.dependent.kubernetes.GroupVersionKindPlural;
 import io.javaoperatorsdk.operator.processing.dependent.workflow.Condition;
 import io.javaoperatorsdk.operator.processing.dependent.workflow.KubernetesResourceDeletedCondition;
 import io.javaoperatorsdk.operator.processing.dependent.workflow.WorkflowBuilder;
@@ -199,7 +201,11 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue> {
     var name = genericTemplateHandler.processTemplate(Utils.getName(spec), primary, false, context);
     var dr = createDependentResource(name, spec, leafDependent, resourceInSameNamespaceAsPrimary,
         targetNamespace.orElse(null));
-    var gvk = dr.getGroupVersionKind();
+    GroupVersionKind gvk = dr.getGroupVersionKind();
+    // remove when fixed in josdk
+    if (gvk instanceof GroupVersionKindPlural gvkp) {
+      gvk = new GroupVersionKind(gvkp.getGroup(), gvkp.getVersion(), gvkp.getKind());
+    }
 
     var es = informerRegister.registerInformer(context, gvk, primary);
     dr.setEventSource(es);

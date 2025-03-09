@@ -4,6 +4,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.fabric8.kubernetes.api.model.GenericKubernetesResource;
 import io.fabric8.kubernetes.client.utils.Serialization;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
@@ -23,6 +26,8 @@ public class GenericDependentResource
     implements Deleter<Glue>,
     Updater<GenericKubernetesResource, Glue>,
     Creator<GenericKubernetesResource, Glue> {
+
+  private static final Logger log = LoggerFactory.getLogger(GenericDependentResource.class);
 
   protected final GenericKubernetesResource desired;
   protected final String desiredTemplate;
@@ -104,7 +109,15 @@ public class GenericDependentResource
       Glue primary,
       Context<Glue> context) {
 
-    var res = context.getSecondaryResources(GenericKubernetesResource.class)
+    var allSecondaryResources = context.getSecondaryResources(GenericKubernetesResource.class);
+    if (log.isDebugEnabled()) {
+      log.debug("All secondary resources for DR: {}, resources: {}", name,
+          allSecondaryResources.stream()
+              .map(r -> "{ Name: %s; Namespace: %s }".formatted(r.getMetadata().getName(),
+                  r.getMetadata().getNamespace()))
+              .toList());
+    }
+    var res = allSecondaryResources
         .stream()
         .filter(r -> r.getKind().equals(getGroupVersionKind().getKind()) &&
             r.getApiVersion().equals(getGroupVersionKind().apiVersion()) &&
