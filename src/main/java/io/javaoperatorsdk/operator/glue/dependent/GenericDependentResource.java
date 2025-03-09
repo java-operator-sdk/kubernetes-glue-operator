@@ -122,4 +122,9 @@ public class GenericDependentResource
       return Optional.empty();
     }
   }
+
+  @Override
+  public String name() {
+    return name;
+  }
 }
