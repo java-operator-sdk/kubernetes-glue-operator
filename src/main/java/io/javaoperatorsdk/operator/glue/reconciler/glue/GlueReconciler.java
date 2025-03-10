@@ -199,8 +199,10 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue> {
     var resourceInSameNamespaceAsPrimary =
         targetNamespace.map(n -> n.trim().equals(primary.getMetadata().getNamespace().trim()))
             .orElse(true);
-
-    var name = genericTemplateHandler.processTemplate(Utils.getName(spec), primary, false, context);
+    String name = null;
+    if (!Boolean.TRUE.equals(spec.getBulk())) {
+      name = genericTemplateHandler.processTemplate(Utils.getName(spec), primary, false, context);
+    }
     var dr = createDependentResource(name, spec, leafDependent, resourceInSameNamespaceAsPrimary,
         targetNamespace.orElse(null));
     GroupVersionKind gvk = toGVKIfGVKP(dr.getGroupVersionKind());
