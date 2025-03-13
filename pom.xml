@@ -50,7 +50,7 @@
     <dependency>
       <groupId>io.javaoperatorsdk</groupId>
       <artifactId>operator-framework-core</artifactId>
-      <version>5.0.3</version>
+      <version>5.0.4</version>
     </dependency>
     <dependency>
       <groupId>io.quarkiverse.operatorsdk</groupId>
