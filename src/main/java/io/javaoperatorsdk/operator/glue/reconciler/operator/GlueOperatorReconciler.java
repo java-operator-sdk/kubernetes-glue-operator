@@ -10,7 +10,7 @@ import io.fabric8.kubernetes.api.model.GenericKubernetesResource;
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
 import io.fabric8.kubernetes.client.utils.KubernetesResourceUtil;
-import io.javaoperatorsdk.operator.api.config.informer.InformerConfiguration;
+import io.javaoperatorsdk.operator.api.config.informer.InformerEventSourceConfiguration;
 import io.javaoperatorsdk.operator.api.reconciler.*;
 import io.javaoperatorsdk.operator.glue.ControllerConfig;
 import io.javaoperatorsdk.operator.glue.GlueException;
@@ -19,12 +19,13 @@ import io.javaoperatorsdk.operator.glue.customresource.glue.GlueSpec;
 import io.javaoperatorsdk.operator.glue.customresource.glue.RelatedResourceSpec;
 import io.javaoperatorsdk.operator.glue.customresource.operator.GlueOperator;
 import io.javaoperatorsdk.operator.glue.customresource.operator.GlueOperatorSpec;
+import io.javaoperatorsdk.operator.glue.customresource.operator.GlueOperatorStatus;
 import io.javaoperatorsdk.operator.glue.customresource.operator.Parent;
-import io.javaoperatorsdk.operator.glue.customresource.operator.ResourceFlowOperatorStatus;
-import io.javaoperatorsdk.operator.glue.reconciler.ValidationAndErrorHandler;
+import io.javaoperatorsdk.operator.glue.reconciler.ValidationAndStatusHandler;
 import io.javaoperatorsdk.operator.glue.reconciler.glue.GlueReconciler;
 import io.javaoperatorsdk.operator.glue.templating.GenericTemplateHandler;
 import io.javaoperatorsdk.operator.processing.GroupVersionKind;
+import io.javaoperatorsdk.operator.processing.event.NoEventSourceForClassException;
 import io.javaoperatorsdk.operator.processing.event.ResourceID;
 import io.javaoperatorsdk.operator.processing.event.source.EventSource;
 import io.javaoperatorsdk.operator.processing.event.source.informer.InformerEventSource;
@@ -33,8 +34,8 @@ import jakarta.annotation.PostConstruct;
 
 @ControllerConfiguration(name = GlueOperatorReconciler.GLUE_OPERATOR_RECONCILER_NAME)
 public class GlueOperatorReconciler
-    implements Reconciler<GlueOperator>, EventSourceInitializer<GlueOperator>,
-    Cleaner<GlueOperator>, ErrorStatusHandler<GlueOperator> {
+    implements Reconciler<GlueOperator>,
+    Cleaner<GlueOperator> {
 
   private static final Logger log = LoggerFactory.getLogger(GlueOperatorReconciler.class);
 
@@ -48,7 +49,7 @@ public class GlueOperatorReconciler
   Optional<String> glueLabelSelector;
 
   private final ControllerConfig controllerConfig;
-  private final ValidationAndErrorHandler validationAndErrorHandler;
+  private final ValidationAndStatusHandler validationAndErrorHandler;
   private final GenericTemplateHandler genericTemplateHandler;
 
   private Map<String, String> defaultGlueLabels;
@@ -56,10 +57,10 @@ public class GlueOperatorReconciler
   private InformerEventSource<Glue, GlueOperator> glueEventSource;
 
   public GlueOperatorReconciler(ControllerConfig controllerConfig,
-      ValidationAndErrorHandler validationAndErrorHandler,
+      ValidationAndStatusHandler validationAndStatusHandler,
       GenericTemplateHandler genericTemplateHandler) {
     this.controllerConfig = controllerConfig;
-    this.validationAndErrorHandler = validationAndErrorHandler;
+    this.validationAndErrorHandler = validationAndStatusHandler;
     this.genericTemplateHandler = genericTemplateHandler;
   }
 
@@ -95,7 +96,7 @@ public class GlueOperatorReconciler
       }
     });
 
-    return UpdateControl.noUpdate();
+    return validationAndErrorHandler.handleStatusUpdate(glueOperator);
   }
 
   private Glue createGlue(GenericKubernetesResource targetParentResource,
@@ -177,11 +178,11 @@ public class GlueOperatorReconciler
     try {
       es = (InformerEventSource<GenericKubernetesResource, GlueOperator>) context
           .eventSourceRetriever()
-          .getResourceEventSourceFor(GenericKubernetesResource.class, gvk.toString());
+          .getEventSourceFor(GenericKubernetesResource.class, gvk.toString());
       es.start();
-    } catch (IllegalArgumentException e) {
-      var configBuilder = InformerConfiguration.from(gvk,
-          context.eventSourceRetriever().eventSourceContextForDynamicRegistration())
+    } catch (NoEventSourceForClassException | IllegalArgumentException e) {
+      var configBuilder = InformerEventSourceConfiguration.from(gvk, GlueOperator.class)
+          .withName(gvk.toString())
           .withSecondaryToPrimaryMapper(
               resource -> Set.of(ResourceID.fromResource(glueOperator)));
 
@@ -191,27 +192,28 @@ public class GlueOperatorReconciler
 
       es = new InformerEventSource<>(configBuilder.build(),
           context.eventSourceRetriever().eventSourceContextForDynamicRegistration());
-      context.eventSourceRetriever().dynamicallyRegisterEventSource(gvk.toString(), es);
+      context.eventSourceRetriever().dynamicallyRegisterEventSource(es);
     }
     return es;
   }
 
   @Override
-  public Map<String, EventSource> prepareEventSources(
+  public List<EventSource<?, GlueOperator>> prepareEventSources(
       EventSourceContext<GlueOperator> eventSourceContext) {
     glueEventSource = new InformerEventSource<>(
-        InformerConfiguration.from(Glue.class, eventSourceContext)
+        InformerEventSourceConfiguration.from(Glue.class, GlueOperator.class)
+            .withName("GlueEventSource")
             .withLabelSelector(FOR_GLUE_OPERATOR_LABEL_KEY + "=" + FOR_GLUE_OPERATOR_LABEL_VALUE)
             .build(),
         eventSourceContext);
-    return EventSourceInitializer.nameEventSources(glueEventSource);
+    return List.of(glueEventSource);
   }
 
   @Override
   public ErrorStatusUpdateControl<GlueOperator> updateErrorStatus(GlueOperator resource,
       Context<GlueOperator> context, Exception e) {
     if (resource.getStatus() == null) {
-      resource.setStatus(new ResourceFlowOperatorStatus());
+      resource.setStatus(new GlueOperatorStatus());
     }
     return validationAndErrorHandler.updateStatusErrorMessage(e, resource);
   }

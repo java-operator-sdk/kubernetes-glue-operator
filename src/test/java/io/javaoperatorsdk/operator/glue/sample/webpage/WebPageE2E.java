@@ -52,7 +52,7 @@ public class WebPageE2E {
 
     createdWebPage.getMetadata().setResourceVersion(null);
     createdWebPage.getSpec().setExposed(true);
-    createdWebPage = client.resource(createdWebPage).update();
+    createdWebPage = client.resource(createdWebPage).patch();
 
     await().untilAsserted(() -> {
       var ingress = client.resources(Ingress.class).withName(webPage.getMetadata().getName()).get();

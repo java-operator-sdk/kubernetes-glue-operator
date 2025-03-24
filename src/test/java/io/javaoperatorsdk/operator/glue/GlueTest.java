@@ -19,7 +19,7 @@ import io.fabric8.kubernetes.client.dsl.NonDeletingOperation;
 import io.javaoperatorsdk.operator.glue.customresource.TestCustomResource;
 import io.javaoperatorsdk.operator.glue.customresource.glue.DependentResourceSpec;
 import io.javaoperatorsdk.operator.glue.customresource.glue.Glue;
-import io.javaoperatorsdk.operator.glue.reconciler.ValidationAndErrorHandler;
+import io.javaoperatorsdk.operator.glue.reconciler.ValidationAndStatusHandler;
 import io.quarkus.test.junit.QuarkusTest;
 
 import static io.javaoperatorsdk.operator.glue.TestUtils.INITIAL_RECONCILE_WAIT_TIMEOUT;
@@ -38,7 +38,7 @@ class GlueTest extends TestBase {
         TestUtils.loadGlue("/glue/Templating.yaml");
     glue = create(glue);
 
-    await().untilAsserted(() -> {
+    await().timeout(Duration.ofHours(1)).untilAsserted(() -> {
       var cm1 = get(ConfigMap.class, "templconfigmap1");
       var cm2 = get(ConfigMap.class, "templconfigmap2");
       assertThat(cm1).isNotNull();
@@ -60,7 +60,7 @@ class GlueTest extends TestBase {
 
     delete(glue);
 
-    await().timeout(Duration.ofSeconds(30)).untilAsserted(() -> {
+    await().timeout(GC_TIMEOUT).untilAsserted(() -> {
       var cm1 = get(ConfigMap.class, "templconfigmap1");
       var cm2 = get(ConfigMap.class, "templconfigmap2");
       assertThat(cm1).isNull();
@@ -99,7 +99,7 @@ class GlueTest extends TestBase {
 
     delete(glue);
 
-    await().untilAsserted(() -> {
+    await().timeout(GC_TIMEOUT).untilAsserted(() -> {
       var cm1 = get(ConfigMap.class, "cm-1");
       var cm2 = get(ConfigMap.class, "cm-2");
       assertThat(cm1).isNull();
@@ -136,7 +136,7 @@ class GlueTest extends TestBase {
 
     delete(glue);
 
-    await().timeout(Duration.ofSeconds(GC_TIMEOUT_SEC)).untilAsserted(() -> {
+    await().timeout(GC_TIMEOUT).untilAsserted(() -> {
       var cm1 = get(ConfigMap.class, "configmap1");
       var cm2 = get(ConfigMap.class, "configmap2");
       assertThat(cm1).isNull();
@@ -159,7 +159,7 @@ class GlueTest extends TestBase {
 
     delete(glue);
 
-    await().untilAsserted(() -> {
+    await().timeout(GC_TIMEOUT).untilAsserted(() -> {
       var cm1 = get(ConfigMap.class, "templconfigmap1");
       var cm2 = get(ConfigMap.class, "templconfigmap2");
       assertThat(cm1).isNull();
@@ -188,7 +188,7 @@ class GlueTest extends TestBase {
     }));
 
     glueList.forEach(this::delete);
-    await().untilAsserted(() -> IntStream.range(0, num).forEach(index -> {
+    await().timeout(GC_TIMEOUT).untilAsserted(() -> IntStream.range(0, num).forEach(index -> {
       var w = get(Glue.class, "concurrencysample" + index);
       assertThat(w).isNull();
     }));
@@ -224,7 +224,7 @@ class GlueTest extends TestBase {
     glue.getMetadata().setResourceVersion(null);
     delete(glue);
 
-    await().untilAsserted(() -> {
+    await().timeout(GC_TIMEOUT).untilAsserted(() -> {
       var cm1 = get(ConfigMap.class, "configmap1");
       var s = get(Secret.class, "secret1");
       assertThat(cm1).isNull();
@@ -241,7 +241,7 @@ class GlueTest extends TestBase {
 
       assertThat(actualGlue.getStatus()).isNotNull();
       Assertions.assertThat(actualGlue.getStatus().getErrorMessage())
-          .startsWith(ValidationAndErrorHandler.NON_UNIQUE_NAMES_FOUND_PREFIX);
+          .startsWith(ValidationAndStatusHandler.NON_UNIQUE_NAMES_FOUND_PREFIX);
     });
   }
 

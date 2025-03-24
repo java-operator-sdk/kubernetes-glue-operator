@@ -1,6 +1,7 @@
 package io.javaoperatorsdk.operator.glue.sample.webpage;
 
 
+
 import org.junit.jupiter.api.Test;
 
 import io.fabric8.kubernetes.api.model.ConfigMap;
@@ -15,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
 @QuarkusTest
-public class WebPageSampleTest extends TestBase {
+class WebPageSampleTest extends TestBase {
 
   @Test
   void webPageCRUD() {

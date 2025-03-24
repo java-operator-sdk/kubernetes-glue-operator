@@ -24,11 +24,10 @@ import io.javaoperatorsdk.operator.glue.customresource.glue.condition.ReadyCondi
 import io.javaoperatorsdk.operator.glue.dependent.GCGenericBulkDependentResource;
 import io.javaoperatorsdk.operator.glue.dependent.GCGenericDependentResource;
 import io.javaoperatorsdk.operator.glue.dependent.GenericDependentResource;
-import io.javaoperatorsdk.operator.glue.dependent.GenericResourceDiscriminator;
-import io.javaoperatorsdk.operator.glue.reconciler.ValidationAndErrorHandler;
+import io.javaoperatorsdk.operator.glue.reconciler.ValidationAndStatusHandler;
 import io.javaoperatorsdk.operator.glue.reconciler.operator.GlueOperatorReconciler;
 import io.javaoperatorsdk.operator.glue.templating.GenericTemplateHandler;
-import io.javaoperatorsdk.operator.processing.dependent.BulkDependentResource;
+import io.javaoperatorsdk.operator.processing.GroupVersionKind;
 import io.javaoperatorsdk.operator.processing.dependent.workflow.Condition;
 import io.javaoperatorsdk.operator.processing.dependent.workflow.KubernetesResourceDeletedCondition;
 import io.javaoperatorsdk.operator.processing.dependent.workflow.WorkflowBuilder;
@@ -38,17 +37,17 @@ import static io.javaoperatorsdk.operator.glue.reconciler.operator.GlueOperatorR
 import static io.javaoperatorsdk.operator.glue.reconciler.operator.GlueOperatorReconciler.PARENT_RELATED_RESOURCE_NAME;
 
 @ControllerConfiguration(name = GlueReconciler.GLUE_RECONCILER_NAME)
-public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue>, ErrorStatusHandler<Glue> {
+public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue> {
 
   private static final Logger log = LoggerFactory.getLogger(GlueReconciler.class);
   public static final String DEPENDENT_NAME_ANNOTATION_KEY =
-      "io.javaoperatorsdk.operator.resourceflow/name";
+      "io.javaoperatorsdk.operator.glue/resource-name";
   public static final String PARENT_GLUE_FINALIZER_PREFIX =
-      "io.javaoperatorsdk.operator.resourceflow.glue/";
+      "io.javaoperatorsdk.operator.glue/";
   public static final String GLUE_RECONCILER_NAME = "glue";
 
 
-  private final ValidationAndErrorHandler validationAndErrorHandler;
+  private final ValidationAndStatusHandler validationAndStatusHandler;
   private final InformerRegister informerRegister;
 
   private final KubernetesResourceDeletedCondition deletePostCondition =
@@ -56,10 +55,10 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue>, ErrorSta
 
   private final GenericTemplateHandler genericTemplateHandler;
 
-  public GlueReconciler(ValidationAndErrorHandler validationAndErrorHandler,
+  public GlueReconciler(ValidationAndStatusHandler validationAndStatusHandler,
       InformerRegister informerRegister,
       GenericTemplateHandler genericTemplateHandler) {
-    this.validationAndErrorHandler = validationAndErrorHandler;
+    this.validationAndStatusHandler = validationAndStatusHandler;
     this.informerRegister = informerRegister;
     this.genericTemplateHandler = genericTemplateHandler;
   }
@@ -80,7 +79,7 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue>, ErrorSta
     log.debug("Reconciling glue. name: {} namespace: {}",
         primary.getMetadata().getName(), primary.getMetadata().getNamespace());
 
-    validationAndErrorHandler.checkIfValidGlueSpec(primary.getSpec());
+    validationAndStatusHandler.checkIfValidGlueSpec(primary.getSpec());
 
     registerRelatedResourceInformers(context, primary);
     if (deletedGlueIfParentMarkedForDeletion(context, primary)) {
@@ -93,23 +92,33 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue>, ErrorSta
     informerRegister.deRegisterInformerOnResourceFlowChange(context, primary);
     result.throwAggregateExceptionIfErrorsPresent();
     patchRelatedResourcesStatus(context, primary);
-    return removeErrorMessageFromGlueStatusIfPresent(primary);
+    return validationAndStatusHandler.handleStatusUpdate(primary);
   }
 
   @Override
   public DeleteControl cleanup(Glue primary, Context<Glue> context) {
 
+    log.debug("Cleanup for Glue. Name: {} namespace: {}", primary.getMetadata().getName(),
+        primary.getMetadata().getNamespace());
+
+    registerRelatedResourceInformers(context, primary);
     var actualWorkflow = buildWorkflowAndRegisterInformers(primary, context);
     var result = actualWorkflow.cleanup(primary, context);
     result.throwAggregateExceptionIfErrorsPresent();
 
-    if (!result.allPostConditionsMet()) {
+    var deletableResourceCount = actualWorkflow.getDependentResourcesByName()
+        .entrySet().stream().filter(e -> e.getValue().isDeletable()).count();
+
+    // add this logic to josdk with deleted dependents
+    if (!result.allPostConditionsMet() || result.getDeleteCalledOnDependents()
+        .size() < deletableResourceCount) {
       return DeleteControl.noFinalizerRemoval();
     } else {
       removeFinalizerForParent(primary, context);
-      actualWorkflow.getDependentResourcesByNameWithoutActivationCondition().forEach((n, dr) -> {
+      actualWorkflow.getDependentResourcesWithoutActivationCondition().forEach(dr -> {
         var genericDependentResource = (GenericDependentResource) dr;
-        informerRegister.deRegisterInformer(genericDependentResource.getGroupVersionKind(),
+        informerRegister.deRegisterInformer(
+            genericDependentResource.getGroupVersionKind(),
             primary, context);
       });
       informerRegister.deRegisterInformerForRelatedResources(primary, context);
@@ -124,7 +133,7 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue>, ErrorSta
     if (resource.getStatus() == null) {
       resource.setStatus(new GlueStatus());
     }
-    return validationAndErrorHandler.updateStatusErrorMessage(e, resource);
+    return validationAndStatusHandler.updateStatusErrorMessage(e, resource);
   }
 
   private boolean deletedGlueIfParentMarkedForDeletion(Context<Glue> context, Glue primary) {
@@ -137,21 +146,10 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue>, ErrorSta
     }
   }
 
-  private UpdateControl<Glue> removeErrorMessageFromGlueStatusIfPresent(Glue primary) {
-    if (primary.getStatus() != null && primary.getStatus().getErrorMessage() != null) {
-      primary.getStatus().setErrorMessage(null);
-      primary.getMetadata().setResourceVersion(null);
-      return UpdateControl.patchStatus(primary);
-    } else {
-      return UpdateControl.noUpdate();
-    }
-  }
-
   private void registerRelatedResourceInformers(Context<Glue> context,
       Glue glue) {
-    glue.getSpec().getRelatedResources().forEach(r -> {
-      informerRegister.registerInformerForRelatedResource(context, glue, r);
-    });
+    glue.getSpec().getRelatedResources()
+        .forEach(r -> informerRegister.registerInformerForRelatedResource(context, glue, r));
   }
 
   // todo test
@@ -177,12 +175,10 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue>, ErrorSta
   private io.javaoperatorsdk.operator.processing.dependent.workflow.Workflow<Glue> buildWorkflowAndRegisterInformers(
       Glue primary, Context<Glue> context) {
     var builder = new WorkflowBuilder<Glue>();
-    Set<String> leafDependentNames = Utils.leafResourceNames(primary);
 
     Map<String, GenericDependentResource> genericDependentResourceMap = new HashMap<>();
     primary.getSpec().getChildResources().forEach(spec -> createAndAddDependentToWorkflow(primary,
-        context, spec, genericDependentResourceMap, builder,
-        leafDependentNames.contains(spec.getName())));
+        context, spec, genericDependentResourceMap, builder));
 
     return builder.build();
   }
@@ -190,7 +186,7 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue>, ErrorSta
   private void createAndAddDependentToWorkflow(Glue primary, Context<Glue> context,
       DependentResourceSpec spec,
       Map<String, GenericDependentResource> genericDependentResourceMap,
-      WorkflowBuilder<Glue> builder, boolean leafDependent) {
+      WorkflowBuilder<Glue> builder) {
 
     // todo test processing ns not as template
     // todo test processing ns as template
@@ -200,37 +196,36 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue>, ErrorSta
     var resourceInSameNamespaceAsPrimary =
         targetNamespace.map(n -> n.trim().equals(primary.getMetadata().getNamespace().trim()))
             .orElse(true);
-
-    var dr = createDependentResource(spec, leafDependent, resourceInSameNamespaceAsPrimary);
-    var gvk = dr.getGroupVersionKind();
-
-    if (!(dr instanceof BulkDependentResource<?, ?>)) {
-      dr.setResourceDiscriminator(new GenericResourceDiscriminator(dr.getGroupVersionKind(),
-          genericTemplateHandler.processTemplate(Utils.getName(spec), primary, false, context),
-          targetNamespace.orElse(null)));
+    String name = null;
+    if (!Boolean.TRUE.equals(spec.getBulk())) {
+      name = genericTemplateHandler.processTemplate(Utils.getName(spec), primary, false, context);
     }
-
+    var dr = createDependentResource(name, spec, resourceInSameNamespaceAsPrimary,
+        targetNamespace.orElse(null));
+    GroupVersionKind gvk = dr.getGroupVersionKind();
     var es = informerRegister.registerInformer(context, gvk, primary);
-    dr.configureWith(es);
+    dr.setEventSource(es);
 
-    builder.addDependentResource(dr);
-    spec.getDependsOn().forEach(s -> builder.dependsOn(genericDependentResourceMap.get(s)));
-    // if a resources does not depend on another there is no reason to add cleanup condition
+    var nodeBuilder = builder.addDependentResourceAndConfigure(dr);
+    spec.getDependsOn().forEach(s -> nodeBuilder.dependsOn(genericDependentResourceMap.get(s)));
+    // if resources do not depend on another, there is no reason to add cleanup condition
     if (!spec.getDependsOn().isEmpty()) {
-      builder.withDeletePostcondition(deletePostCondition);
+      nodeBuilder.withDeletePostcondition(deletePostCondition);
     }
     genericDependentResourceMap.put(spec.getName(), dr);
 
     Optional.ofNullable(spec.getReadyPostCondition())
-        .ifPresent(c -> builder.withReadyPostcondition(toCondition(c)));
+        .ifPresent(c -> nodeBuilder.withReadyPostcondition(toCondition(c)));
     Optional.ofNullable(spec.getCondition())
-        .ifPresent(c -> builder.withReconcilePrecondition(toCondition(c)));
+        .ifPresent(c -> nodeBuilder.withReconcilePrecondition(toCondition(c)));
+
   }
 
-  private GenericDependentResource createDependentResource(DependentResourceSpec spec,
-      boolean leafDependent, Boolean resourceInSameNamespaceAsPrimary) {
+  private GenericDependentResource createDependentResource(String resourceName,
+      DependentResourceSpec spec, Boolean resourceInSameNamespaceAsPrimary, String namespace) {
 
-    if (leafDependent && resourceInSameNamespaceAsPrimary && !spec.isClusterScoped()) {
+    if (spec.getDependsOn().isEmpty() &&
+        resourceInSameNamespaceAsPrimary && !spec.isClusterScoped()) {
       return spec.getResourceTemplate() != null
           ? spec.getBulk()
               ? new GCGenericBulkDependentResource(genericTemplateHandler,
@@ -238,18 +233,20 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue>, ErrorSta
                   spec.getName(),
                   spec.isClusterScoped(), spec.getMatcher())
               : new GCGenericDependentResource(genericTemplateHandler, spec.getResourceTemplate(),
-                  spec.getName(),
+                  spec.getName(), resourceName, namespace,
                   spec.isClusterScoped(), spec.getMatcher())
           : new GCGenericDependentResource(genericTemplateHandler, spec.getResource(),
-              spec.getName(),
+              spec.getName(), resourceName, namespace,
               spec.isClusterScoped(), spec.getMatcher());
     } else {
       return spec.getResourceTemplate() != null
           ? new GenericDependentResource(genericTemplateHandler,
-              spec.getResourceTemplate(), spec.getName(), spec.isClusterScoped(),
+              spec.getResourceTemplate(), spec.getName(), resourceName, namespace,
+              spec.isClusterScoped(),
               spec.getMatcher())
           : new GenericDependentResource(genericTemplateHandler,
-              spec.getResource(), spec.getName(), spec.isClusterScoped(), spec.getMatcher());
+              spec.getResource(), spec.getName(), resourceName, namespace, spec.isClusterScoped(),
+              spec.getMatcher());
     }
   }
 

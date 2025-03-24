@@ -1,8 +1,8 @@
 package io.javaoperatorsdk.operator.glue.customresource;
 
-import io.javaoperatorsdk.operator.api.ObservedGenerationAwareStatus;
+public class AbstractStatus {
 
-public class AbstractStatus extends ObservedGenerationAwareStatus {
+  private Long observedGeneration = null;
 
   private String errorMessage;
 
@@ -14,4 +14,11 @@ public class AbstractStatus extends ObservedGenerationAwareStatus {
     this.errorMessage = errorMessage;
   }
 
+  public Long getObservedGeneration() {
+    return observedGeneration;
+  }
+
+  public void setObservedGeneration(Long observedGeneration) {
+    this.observedGeneration = observedGeneration;
+  }
 }

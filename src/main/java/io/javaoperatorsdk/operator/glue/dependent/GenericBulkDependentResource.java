@@ -22,7 +22,7 @@ public class GenericBulkDependentResource extends
       String desiredTemplate, String name,
       boolean clusterScoped,
       Matcher matcher) {
-    super(genericTemplateHandler, desiredTemplate, name, clusterScoped, matcher);
+    super(genericTemplateHandler, desiredTemplate, name, null, null, clusterScoped, matcher);
   }
 
   @Override

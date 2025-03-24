@@ -38,7 +38,7 @@ class InformerRegisterTest {
     register.registerInformer(mockContext, gvk, testGlue());
 
     verify(informerProducer).createInformer(argThat(c -> {
-      assertThat(c.getLabelSelector()).isEqualTo(LABEL_SELECTOR);
+      assertThat(c.getInformerConfig().getLabelSelector()).isEqualTo(LABEL_SELECTOR);
       return true;
     }), any());
   }

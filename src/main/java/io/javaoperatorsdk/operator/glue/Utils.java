@@ -66,7 +66,7 @@ public class Utils {
     var es =
         (InformerEventSource<GenericKubernetesResource, Glue>) context
             .eventSourceRetriever()
-            .getResourceEventSourceFor(GenericKubernetesResource.class, gvk.toString());
+            .getEventSourceFor(GenericKubernetesResource.class, gvk.toString());
 
     var namespace = relatedResourceSpec.isClusterScoped() ? null
         : relatedResourceSpec.getNamespace() == null ? glue.getMetadata().getNamespace()
@@ -133,13 +133,6 @@ public class Utils {
 
   public static String getKindFromTemplate(String resourceTemplate) {
     return getPropertyValueFromTemplate(resourceTemplate, "kind");
-  }
-
-  public static Set<String> leafResourceNames(Glue glue) {
-    Set<String> result = new HashSet<>();
-    glue.getSpec().getChildResources().forEach(r -> result.add(r.getName()));
-    glue.getSpec().getChildResources().forEach(r -> r.getDependsOn().forEach(result::remove));
-    return result;
   }
 
   private static Optional<String> getOptionalPropertyValueFromTemplate(String resourceTemplate,
