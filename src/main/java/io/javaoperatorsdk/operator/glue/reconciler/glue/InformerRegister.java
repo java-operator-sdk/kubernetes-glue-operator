@@ -104,11 +104,15 @@ public class InformerRegister {
     });
 
     var newInformer = informerProducer.createInformer(configBuilder.build(), context);
-    log.debug("Registering informer for gvk: {}", gvk);
+
     var resultInformer = (InformerEventSource<GenericKubernetesResource, Glue>) context
         .eventSourceRetriever()
         .dynamicallyRegisterEventSource(newInformer);
-    log.debug("Actual new informer registered: {}", resultInformer == newInformer);
+    if (log.isDebugEnabled()) {
+      log.debug("Registering informer for gvk: {} actually registered: {}", gvk,
+          resultInformer == newInformer);
+    }
+
     return resultInformer;
   }
 
