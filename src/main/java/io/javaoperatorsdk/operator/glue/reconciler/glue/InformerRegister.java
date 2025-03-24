@@ -112,7 +112,6 @@ public class InformerRegister {
       log.debug("Registering informer for gvk: {} actually registered: {}", gvk,
           resultInformer == newInformer);
     }
-
     return resultInformer;
   }
 

@@ -28,7 +28,6 @@ import io.javaoperatorsdk.operator.glue.reconciler.ValidationAndStatusHandler;
 import io.javaoperatorsdk.operator.glue.reconciler.operator.GlueOperatorReconciler;
 import io.javaoperatorsdk.operator.glue.templating.GenericTemplateHandler;
 import io.javaoperatorsdk.operator.processing.GroupVersionKind;
-import io.javaoperatorsdk.operator.processing.dependent.kubernetes.GroupVersionKindPlural;
 import io.javaoperatorsdk.operator.processing.dependent.workflow.Condition;
 import io.javaoperatorsdk.operator.processing.dependent.workflow.KubernetesResourceDeletedCondition;
 import io.javaoperatorsdk.operator.processing.dependent.workflow.WorkflowBuilder;
@@ -369,15 +368,6 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue> {
         glue.getMetadata().getLabels().get(GlueOperatorReconciler.FOR_GLUE_OPERATOR_LABEL_KEY);
     return FOR_GLUE_OPERATOR_LABEL_VALUE.equals(labelValue);
 
-  }
-
-  // remove if the conversion not happens in josdk anymore
-  // https://github.com/operator-framework/java-operator-sdk/pull/2726
-  private static GroupVersionKind toGVKIfGVKP(GroupVersionKind gvk) {
-    if (gvk instanceof GroupVersionKindPlural gvkp) {
-      gvk = new GroupVersionKind(gvkp.getGroup(), gvkp.getVersion(), gvkp.getKind());
-    }
-    return gvk;
   }
 
 }
