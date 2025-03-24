@@ -119,7 +119,7 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue> {
       actualWorkflow.getDependentResourcesWithoutActivationCondition().forEach(dr -> {
         var genericDependentResource = (GenericDependentResource) dr;
         informerRegister.deRegisterInformer(
-            toGVKIfGVKP(genericDependentResource.getGroupVersionKind()),
+            genericDependentResource.getGroupVersionKind(),
             primary, context);
       });
       informerRegister.deRegisterInformerForRelatedResources(primary, context);
@@ -203,7 +203,7 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue> {
     }
     var dr = createDependentResource(name, spec, resourceInSameNamespaceAsPrimary,
         targetNamespace.orElse(null));
-    GroupVersionKind gvk = toGVKIfGVKP(dr.getGroupVersionKind());
+    GroupVersionKind gvk = dr.getGroupVersionKind();
     var es = informerRegister.registerInformer(context, gvk, primary);
     dr.setEventSource(es);
 

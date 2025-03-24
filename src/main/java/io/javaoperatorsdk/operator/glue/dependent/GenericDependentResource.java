@@ -31,7 +31,6 @@ public class GenericDependentResource
 
   protected final GenericKubernetesResource desired;
   protected final String desiredTemplate;
-  protected final String name;
   // resource name might be templated
   protected final String resourceName;
   protected final String namespace;
@@ -43,12 +42,11 @@ public class GenericDependentResource
   public GenericDependentResource(GenericTemplateHandler genericTemplateHandler,
       GenericKubernetesResource desired, String name, String resourceName, String namespace,
       boolean clusterScoped, Matcher matcher) {
-    super(new GroupVersionKind(desired.getApiVersion(), desired.getKind()));
+    super(new GroupVersionKind(desired.getApiVersion(), desired.getKind()), name);
     this.desired = desired;
     this.namespace = namespace;
     this.matcher = matcher;
     this.desiredTemplate = null;
-    this.name = name;
     this.resourceName = resourceName;
     this.clusterScoped = clusterScoped;
     this.genericTemplateHandler = genericTemplateHandler;
@@ -59,9 +57,8 @@ public class GenericDependentResource
       boolean clusterScoped,
       Matcher matcher) {
     super(new GroupVersionKind(Utils.getApiVersionFromTemplate(desiredTemplate),
-        Utils.getKindFromTemplate(desiredTemplate)));
+        Utils.getKindFromTemplate(desiredTemplate)), name);
     this.genericTemplateHandler = genericTemplateHandler;
-    this.name = name;
     this.resourceName = resourceName;
     this.desiredTemplate = desiredTemplate;
     this.namespace = namespace;
@@ -136,8 +133,4 @@ public class GenericDependentResource
     }
   }
 
-  @Override
-  public String name() {
-    return name;
-  }
 }
