@@ -180,7 +180,7 @@ public class GlueOperatorReconciler
           .eventSourceRetriever()
           .getEventSourceFor(GenericKubernetesResource.class, gvk.toString());
       es.start();
-    } catch (NoEventSourceForClassException e) {
+    } catch (NoEventSourceForClassException | IllegalArgumentException e) {
       var configBuilder = InformerEventSourceConfiguration.from(gvk, GlueOperator.class)
           .withName(gvk.toString())
           .withSecondaryToPrimaryMapper(
