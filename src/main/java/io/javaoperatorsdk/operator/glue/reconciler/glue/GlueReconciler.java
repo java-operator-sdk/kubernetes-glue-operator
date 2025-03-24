@@ -176,12 +176,10 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue> {
   private io.javaoperatorsdk.operator.processing.dependent.workflow.Workflow<Glue> buildWorkflowAndRegisterInformers(
       Glue primary, Context<Glue> context) {
     var builder = new WorkflowBuilder<Glue>();
-    Set<String> leafDependentNames = Utils.leafResourceNames(primary);
 
     Map<String, GenericDependentResource> genericDependentResourceMap = new HashMap<>();
     primary.getSpec().getChildResources().forEach(spec -> createAndAddDependentToWorkflow(primary,
-        context, spec, genericDependentResourceMap, builder,
-        leafDependentNames.contains(spec.getName())));
+        context, spec, genericDependentResourceMap, builder));
 
     return builder.build();
   }
@@ -189,7 +187,7 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue> {
   private void createAndAddDependentToWorkflow(Glue primary, Context<Glue> context,
       DependentResourceSpec spec,
       Map<String, GenericDependentResource> genericDependentResourceMap,
-      WorkflowBuilder<Glue> builder, boolean leafDependent) {
+      WorkflowBuilder<Glue> builder) {
 
     // todo test processing ns not as template
     // todo test processing ns as template
@@ -203,7 +201,7 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue> {
     if (!Boolean.TRUE.equals(spec.getBulk())) {
       name = genericTemplateHandler.processTemplate(Utils.getName(spec), primary, false, context);
     }
-    var dr = createDependentResource(name, spec, leafDependent, resourceInSameNamespaceAsPrimary,
+    var dr = createDependentResource(name, spec, resourceInSameNamespaceAsPrimary,
         targetNamespace.orElse(null));
     GroupVersionKind gvk = toGVKIfGVKP(dr.getGroupVersionKind());
     var es = informerRegister.registerInformer(context, gvk, primary);
@@ -225,10 +223,10 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue> {
   }
 
   private GenericDependentResource createDependentResource(String resourceName,
-      DependentResourceSpec spec,
-      boolean leafDependent, Boolean resourceInSameNamespaceAsPrimary, String namespace) {
+      DependentResourceSpec spec, Boolean resourceInSameNamespaceAsPrimary, String namespace) {
 
-    if (leafDependent && resourceInSameNamespaceAsPrimary && !spec.isClusterScoped()) {
+    if (spec.getDependsOn().isEmpty() &&
+        resourceInSameNamespaceAsPrimary && !spec.isClusterScoped()) {
       return spec.getResourceTemplate() != null
           ? spec.getBulk()
               ? new GCGenericBulkDependentResource(genericTemplateHandler,

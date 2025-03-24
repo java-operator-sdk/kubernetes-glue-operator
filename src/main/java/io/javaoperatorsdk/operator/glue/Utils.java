@@ -135,13 +135,6 @@ public class Utils {
     return getPropertyValueFromTemplate(resourceTemplate, "kind");
   }
 
-  public static Set<String> leafResourceNames(Glue glue) {
-    Set<String> result = new HashSet<>();
-    glue.getSpec().getChildResources().forEach(r -> result.add(r.getName()));
-    glue.getSpec().getChildResources().forEach(r -> r.getDependsOn().forEach(result::remove));
-    return result;
-  }
-
   private static Optional<String> getOptionalPropertyValueFromTemplate(String resourceTemplate,
       String property) {
     var finalProp = property + ":";
