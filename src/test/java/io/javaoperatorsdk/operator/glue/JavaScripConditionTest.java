@@ -40,7 +40,7 @@ class JavaScripConditionTest {
   void javaScriptSimpleConditionTest() {
 
     var condition = new JavaScripCondition("""
-        x = 1;
+        const x = 1;
         x<2;
         """);
 
