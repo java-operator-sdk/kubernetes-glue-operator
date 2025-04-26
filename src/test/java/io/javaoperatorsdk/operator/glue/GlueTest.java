@@ -1,7 +1,9 @@
 package io.javaoperatorsdk.operator.glue;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
@@ -23,6 +25,7 @@ import io.javaoperatorsdk.operator.glue.reconciler.ValidationAndStatusHandler;
 import io.quarkus.test.junit.QuarkusTest;
 
 import static io.javaoperatorsdk.operator.glue.TestUtils.INITIAL_RECONCILE_WAIT_TIMEOUT;
+import static io.javaoperatorsdk.operator.glue.TestUtils.loadGlue;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
@@ -412,6 +415,45 @@ class GlueTest extends TestBase {
     });
   }
 
+  @Test
+  void secretToConfigMapCopy() {
+    String nsa = "namespace-a";
+    String nsb = "namespace-b";
+
+    createNamespace(nsa);
+    createNamespace(nsb);
+    createSecretToCopy(nsb);
+
+    var glue = client.resource(loadGlue("/glue/CopySecretToConfigMap.yaml"))
+        .createOr(NonDeletingOperation::update);
+
+    await().untilAsserted(() -> {
+      var cm = client.configMaps().inNamespace(nsa).withName("my-secret-copy").get();
+      assertThat(cm).isNotNull();
+      assertThat(cm.getData())
+          .containsExactlyInAnyOrderEntriesOf(Map.of("key1", "value1", "key2", "value2"));
+    });
+
+    deleteInOwnNamespace(glue);
+    await().pollDelay(INITIAL_RECONCILE_WAIT_TIMEOUT).untilAsserted(() -> {
+      var g = get(Glue.class, "secret-to-configmap", nsa);
+      assertThat(g).isNull();
+    });
+  }
+
+  private Secret createSecretToCopy(String nsb) {
+    var secret = new Secret();
+    secret.setMetadata(new ObjectMetaBuilder()
+        .withName("secret-to-copy")
+        .withNamespace(nsb)
+        .build());
+    secret.setData(Map.of("key1",
+        Base64.getEncoder().encodeToString("value1".getBytes(StandardCharsets.UTF_8)),
+        "key2",
+        Base64.getEncoder().encodeToString("value2".getBytes(StandardCharsets.UTF_8))));
+
+    return client.resource(secret).createOr(NonDeletingOperation::update);
+  }
 
   private List<Glue> testWorkflowList(int num) {
     List<Glue> res = new ArrayList<>();
@@ -423,7 +465,4 @@ class GlueTest extends TestBase {
     });
     return res;
   }
-
-
-
 }
