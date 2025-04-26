@@ -1,5 +1,7 @@
 package io.javaoperatorsdk.operator.glue.templating;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -10,6 +12,7 @@ import io.javaoperatorsdk.operator.glue.Utils;
 import io.javaoperatorsdk.operator.glue.customresource.glue.Glue;
 import io.quarkus.qute.Engine;
 import io.quarkus.qute.Template;
+import io.quarkus.qute.ValueResolver;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -21,7 +24,10 @@ public class GenericTemplateHandler {
   public static final String WORKFLOW_METADATA_KEY = "glueMetadata";
 
   private static final ObjectMapper objectMapper = new ObjectMapper();
-  private static final Engine engine = Engine.builder().addDefaults().build();
+  private static final Engine engine = Engine.builder().addDefaults()
+      .addValueResolver(base64EncodeResolver())
+      .addValueResolver(base64DecodeResolver())
+      .build();
 
   public String processTemplate(Map<String, Map<?, ?>> data, String template,
       boolean objectTemplate) {
@@ -75,6 +81,34 @@ public class GenericTemplateHandler {
   @SuppressWarnings("unchecked")
   public static Map<String, ?> parseTemplateToMapObject(String template) {
     return Serialization.unmarshal(template, Map.class);
+  }
+
+  static ValueResolver base64DecodeResolver() {
+    return ValueResolver.builder()
+        .appliesTo(c -> c.getName().equals("decodeBase64")
+            && (c.getBase() instanceof String || c.getBase() instanceof byte[]))
+        .resolveSync(context -> {
+          if (context.getBase() instanceof byte[] bytes) {
+            return new String(Base64.getDecoder().decode(bytes), StandardCharsets.UTF_8);
+          } else {
+            return new String(Base64.getDecoder().decode(context.getBase().toString()),
+                StandardCharsets.UTF_8);
+          }
+        }).build();
+  }
+
+  static ValueResolver base64EncodeResolver() {
+    return ValueResolver.builder()
+        .appliesTo(c -> c.getName().equals("encodeBase64")
+            && (c.getBase() instanceof String || c.getBase() instanceof byte[]))
+        .applyToBaseClass(String.class)
+        .resolveSync(context -> {
+          if (context.getBase() instanceof byte[] bytes) {
+            return Base64.getEncoder().encodeToString(bytes);
+          } else {
+            return Base64.getEncoder().encodeToString(context.getBase().toString().getBytes());
+          }
+        }).build();
   }
 
 }

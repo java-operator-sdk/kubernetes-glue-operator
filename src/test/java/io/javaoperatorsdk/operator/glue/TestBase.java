@@ -37,7 +37,7 @@ public class TestBase {
     testInfo.getTestMethod()
         .ifPresent(method -> testNamespace = KubernetesResourceUtil.sanitizeName(method.getName()));
 
-    client.namespaces().resource(testNamespace(testNamespace)).create();
+    createNamespace(testNamespace);
   }
 
   @AfterEach
@@ -49,7 +49,11 @@ public class TestBase {
     });
   }
 
-  protected Namespace testNamespace(String name) {
+  protected Namespace createNamespace(String name) {
+    return client.namespaces().resource(namespace(name)).createOr(NonDeletingOperation::update);
+  }
+
+  protected Namespace namespace(String name) {
     return new NamespaceBuilder().withMetadata(new ObjectMetaBuilder()
         .withName(name)
         .build()).build();
@@ -70,6 +74,10 @@ public class TestBase {
 
   protected <T extends HasMetadata> T get(Class<T> clazz, String name) {
     return client.resources(clazz).inNamespace(testNamespace).withName(name).get();
+  }
+
+  protected <T extends HasMetadata> T get(Class<T> clazz, String name, String namespace) {
+    return client.resources(clazz).inNamespace(namespace).withName(name).get();
   }
 
   protected <T extends HasMetadata> List<T> list(Class<T> clazz) {
@@ -93,6 +101,8 @@ public class TestBase {
     client.resource(resource).inNamespace(testNamespace).delete();
   }
 
-
+  protected void deleteInOwnNamespace(HasMetadata resource) {
+    client.resource(resource).delete();
+  }
 
 }
