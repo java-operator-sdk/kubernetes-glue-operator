@@ -250,6 +250,15 @@ or for Deployment:
 `glue.operator.resource-label-selector.apps/v1#Deployment=mylabel=samplevalue`
 
 
+## Extending qute templating engine
+
+[Qute templating engine](https://quarkus.io/guides/qute) is very flexible.
+We extend it only we two additional functions, to decode and encode base64 values. More might come in the future.
+You can call these on every string of byte array:
+
+
+
+
 ## Implementation details and performance
 
 Informers are used optimally, in terms of that, for every resource type only one informer is registered in the background. Event there are more `Glue` or `GlueOperator`
