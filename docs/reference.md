@@ -254,10 +254,23 @@ or for Deployment:
 
 [Qute templating engine](https://quarkus.io/guides/qute) is very flexible.
 We extend it only we two additional functions, to decode and encode base64 values. More might come in the future.
-You can call these on every string of byte array:
+You can call these on every string of byte array, using `decodeBase64` and `encodeBase64` keywords.
 
+```yaml
+ resourceTemplate: |
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: my-secret-copy
+          namespace: namespace-a
+        data:
+          {#for entry in secret-to-copy.data}
+            {entry.key}: {entry.value.decodeBase64}
+          {/for}
 
+```
 
+See the full example [here](https://github.com/java-operator-sdk/kubernetes-glue-operator/blob/main/src/test/resources/glue/CopySecretToConfigMap.yaml).
 
 ## Implementation details and performance
 
