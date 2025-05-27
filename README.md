@@ -4,7 +4,7 @@ Kubernetes Glue Operator is a powerful Kubernetes **meta operator** that allows 
 applying a custom resource**. (**NOT** related to AWS Glue)
 
 It provides facilities to compose Kubernetes resources and describes how the resource
-should be reconciled. It supports conditional resources in runtime and ordering of resource reconciliation.
+should be reconciled. It supports conditional resources at runtime and ordering of resource reconciliation.
 In other words, it also allows you to write **workflows** over resources in a **GitOps** friendly way. 
 
 The project is implemented as a thin layer on top of battle-tested [workflow](https://javaoperatorsdk.io/docs/workflows/) and [dependent resources](https://javaoperatorsdk.io/docs/dependent-resources/) features of Java Operator SDK, using [Quarkus based](https://github.com/quarkiverse/quarkus-operator-sdk) version of the framework.
@@ -22,7 +22,7 @@ The project is implemented as a thin layer on top of battle-tested [workflow](ht
 ## Contact Us
 
 Either in the discussion section here on GitHub or at [Kubernetes Slack Operator Channel](https://kubernetes.slack.com/archives/CAW0GV7A5). While
-in "object" form only placeholder substitutions are possible, in string template you can use all the 
+in "object" form only placeholder substitutions are possible; in a string template, you can use all the 
 features of qute.
 
 ## Quick Introduction
@@ -53,7 +53,7 @@ spec:
     </html>
 ```
 
-To create an operator (or more precisely the controller part) with `kubernetes-glue-operator` we have first apply
+To create an operator (or more precisely the controller part) with `kubernetes-glue-operator`, we first have to apply
 the [CRD for WebPage](https://github.com/java-operator-sdk/kubernetes-glue-operator/blob/main/src/test/resources/sample/webpage/webpage.crd.yml).
 To define how the `WebPage` should be reconciled, thus what resources should be created for
 a `WebPage`, we prepare a `GlueOperator`:
