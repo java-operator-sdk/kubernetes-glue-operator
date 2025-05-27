@@ -21,7 +21,7 @@ The project is implemented as a thin layer on top of battle-tested [workflow](ht
 
 ## Contact Us
 
-Either in the discussion section here on GitHub or at [Kubernetes Slack Operator Channel](https://kubernetes.slack.com/archives/CAW0GV7A5). While
+Either in the discussion section here on GitHub, on our server [Discord](https://discord.gg/DacEhAy), or at [Kubernetes Slack Operator Channel](https://kubernetes.slack.com/archives/CAW0GV7A5). While
 in "object" form only placeholder substitutions are possible; in a string template, you can use all the 
 features of qute.
 
