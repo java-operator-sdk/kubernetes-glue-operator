@@ -14,12 +14,14 @@ import io.fabric8.kubernetes.client.utils.Serialization;
 import io.javaoperatorsdk.operator.api.reconciler.*;
 import io.javaoperatorsdk.operator.glue.Utils;
 import io.javaoperatorsdk.operator.glue.conditions.JavaScripCondition;
+import io.javaoperatorsdk.operator.glue.conditions.QuteCondition;
 import io.javaoperatorsdk.operator.glue.conditions.ReadyCondition;
 import io.javaoperatorsdk.operator.glue.customresource.glue.DependentResourceSpec;
 import io.javaoperatorsdk.operator.glue.customresource.glue.Glue;
 import io.javaoperatorsdk.operator.glue.customresource.glue.GlueStatus;
 import io.javaoperatorsdk.operator.glue.customresource.glue.condition.ConditionSpec;
 import io.javaoperatorsdk.operator.glue.customresource.glue.condition.JavaScriptConditionSpec;
+import io.javaoperatorsdk.operator.glue.customresource.glue.condition.QuteConditionSpec;
 import io.javaoperatorsdk.operator.glue.customresource.glue.condition.ReadyConditionSpec;
 import io.javaoperatorsdk.operator.glue.dependent.GCGenericBulkDependentResource;
 import io.javaoperatorsdk.operator.glue.dependent.GCGenericDependentResource;
@@ -287,6 +289,8 @@ public class GlueReconciler implements Reconciler<Glue>, Cleaner<Glue> {
       return new ReadyCondition(readyConditionSpec.isNegated());
     } else if (condition instanceof JavaScriptConditionSpec jsCondition) {
       return new JavaScripCondition(jsCondition.getScript());
+    } else if (condition instanceof QuteConditionSpec quteConditionSpec) {
+      return new QuteCondition(genericTemplateHandler, quteConditionSpec.getTemplate());
     }
     throw new IllegalStateException("Unknown condition: " + condition);
   }
