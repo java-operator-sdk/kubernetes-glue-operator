@@ -8,7 +8,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
     property = "type")
 @JsonSubTypes({
     @JsonSubTypes.Type(value = ReadyConditionSpec.class, name = "ReadyCondition"),
-    @JsonSubTypes.Type(value = JavaScriptConditionSpec.class, name = "JSCondition")
+    @JsonSubTypes.Type(value = JavaScriptConditionSpec.class, name = "JSCondition"),
+    @JsonSubTypes.Type(value = QuteConditionSpec.class, name = "QuteCondition")
 })
 public class ConditionSpec {
 
