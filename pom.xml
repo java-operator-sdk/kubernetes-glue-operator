@@ -22,7 +22,7 @@
     <graalvm.version>24.1.2</graalvm.version>
     <mokito.version>5.11.0</mokito.version>
     <qosdk.version>7.1.0</qosdk.version>
-    <assertj.version>3.27.3</assertj.version>
+    <assertj.version>3.27.7</assertj.version>
     <spotless.version>2.43.0</spotless.version>
   </properties>
 
