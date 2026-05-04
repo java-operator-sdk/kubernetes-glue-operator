@@ -30,7 +30,7 @@ jobs:
           git config --local user.name "GitHub Action"
           git commit -m "Set new SNAPSHOT version into pom file(s)." -a
       - name: Upload Assets
-        uses: AButler/upload-release-assets@v3.0
+        uses: AButler/upload-release-assets@v4.0
         with:
           files: "target/kubernetes/*"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
