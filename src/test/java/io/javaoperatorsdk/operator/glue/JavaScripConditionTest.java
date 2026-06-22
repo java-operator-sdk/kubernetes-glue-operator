@@ -52,17 +52,17 @@ class JavaScripConditionTest {
   }
 
   @Test
-    void injectsTargetResourceResource() {
-        when(mockContext.getSecondaryResources(any())).thenReturn(Set.of());
-        when(dr.getSecondaryResource(any(), any())).thenReturn(Optional.of(configMap()));
+  void injectsTargetResourceResource() {
+    when(mockContext.getSecondaryResources(any())).thenReturn(Set.of());
+    when(dr.getSecondaryResource(any(), any())).thenReturn(Optional.of(configMap()));
 
-        var condition = new JavaScripCondition("""
-                    target.data.key1 == "val1";
-                """);
+    var condition = new JavaScripCondition("""
+            target.data.key1 == "val1";
+        """);
 
-        var res = condition.isMet(dr, dummyGlue, mockContext);
-        assertThat(res).isTrue();
-    }
+    var res = condition.isMet(dr, dummyGlue, mockContext);
+    assertThat(res).isTrue();
+  }
 
   @Test
   void injectsSecondaryResourcesResource() {
