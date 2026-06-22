@@ -142,10 +142,27 @@
         </executions>
       </plugin>
 
+      <!-- Exposes dependency artifact paths as properties (e.g. ${org.mockito:mockito-core:jar})
+           so the Mockito agent can be passed to surefire via -javaagent. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>properties</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${surefire-plugin.version}</version>
         <configuration>
+          <!-- Mockito no longer self-attaches its inline mock-maker agent on recent JDKs;
+               load it explicitly to avoid "JDK does not supply a working agent attachment
+               mechanism" failures. -->
+          <argLine>-javaagent:${org.mockito:mockito-core:jar}</argLine>
           <includes>
             <include>**/*Test.java</include>
           </includes>
