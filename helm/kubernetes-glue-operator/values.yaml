@@ -1,0 +1,84 @@
+# Default values for the kubernetes-glue-operator chart.
+
+replicaCount: 1
+
+image:
+  repository: ghcr.io/java-operator-sdk/kubernetes-glue-operator
+  pullPolicy: IfNotPresent
+  # Image tag. Defaults to the chart appVersion when left empty.
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Create a ServiceAccount for the operator.
+  create: true
+  annotations: {}
+  # If not set and create is true, a name is generated from the fullname template.
+  name: ""
+
+# Namespaces the operator watches. Empty list means all namespaces (cluster-wide).
+watchNamespaces: []
+
+rbac:
+  # Create RBAC resources (ClusterRoles and bindings) for the operator.
+  create: true
+  # A Glue/GlueOperator can manage arbitrary resource types, so by default the
+  # operator is granted cluster-wide access to all resources. Set to false to
+  # supply your own least-privilege ClusterRole/binding instead (see
+  # extraClusterRoleRules / bindExistingClusterRole below).
+  allAccess: true
+  # Extra rules added to the operator's ClusterRole. Useful when allAccess is
+  # false to scope access to only the resource types your Glues manage.
+  extraRules: []
+  # Bind the operator's ServiceAccount to the built-in "view" ClusterRole in the
+  # release namespace (matches the operator's generated manifests).
+  bindView: true
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+
+# Container resource requests/limits.
+resources: {}
+
+# Probes hit the Quarkus health endpoints. Set any to null/{} to disable.
+livenessProbe:
+  httpGet:
+    path: /q/health/live
+    port: 8080
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 10
+  failureThreshold: 3
+readinessProbe:
+  httpGet:
+    path: /q/health/ready
+    port: 8080
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 10
+  failureThreshold: 3
+startupProbe:
+  httpGet:
+    path: /q/health/started
+    port: 8080
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 10
+  failureThreshold: 3
+
+# Extra environment variables for the operator container.
+extraEnv: []
+
+podAnnotations: {}
+podLabels: {}
+podSecurityContext: {}
+securityContext: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}
+terminationGracePeriodSeconds: 10

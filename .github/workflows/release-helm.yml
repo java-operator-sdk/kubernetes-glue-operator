@@ -1,0 +1,51 @@
+name: Release Helm chart
+
+# Publishes the Helm chart to the GitHub Pages Helm repository when a release is
+# published. The chart version and appVersion are set to the release tag, and the
+# chart is uploaded via helm/chart-releaser-action (gh-pages branch + index.yaml).
+on:
+  release:
+    types: [ released ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+
+jobs:
+  release-chart:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+      - name: Set chart version to release tag
+        env:
+          # release runs strip a leading "v"; workflow_dispatch falls back to the chart's value
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          if [ -n "${RELEASE_TAG}" ]; then
+            VERSION="${RELEASE_TAG#v}"
+            chart="helm/kubernetes-glue-operator/Chart.yaml"
+            sed -i "s/^version:.*/version: ${VERSION}/" "$chart"
+            sed -i "s/^appVersion:.*/appVersion: \"${VERSION}\"/" "$chart"
+            echo "Chart set to version/appVersion ${VERSION}"
+            grep -E '^(version|appVersion):' "$chart"
+          fi
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+
+      - name: Run chart-releaser
+        uses: helm/chart-releaser-action@v1.7.0
+        with:
+          charts_dir: helm
+        env:
+          CR_TOKEN: ${{ secrets.GITHUB_TOKEN }}

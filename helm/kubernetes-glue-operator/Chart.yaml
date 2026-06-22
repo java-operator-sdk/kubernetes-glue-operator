@@ -1,0 +1,18 @@
+apiVersion: v2
+name: kubernetes-glue-operator
+description: A Helm chart for the Kubernetes Glue Operator
+type: application
+# version (chart) and appVersion (operator image) are overwritten at release time
+# to match the released operator version.
+version: 0.1.0
+appVersion: "0.11.0"
+home: https://github.com/java-operator-sdk/kubernetes-glue-operator
+sources:
+  - https://github.com/java-operator-sdk/kubernetes-glue-operator
+keywords:
+  - operator
+  - glue
+  - java-operator-sdk
+maintainers:
+  - name: java-operator-sdk
+    url: https://github.com/java-operator-sdk
