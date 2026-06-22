@@ -16,7 +16,7 @@ import static io.javaoperatorsdk.operator.glue.reconciler.glue.GlueReconciler.DE
 
 public class GenericBulkDependentResource extends
     GenericDependentResource implements
-    BulkDependentResource<GenericKubernetesResource, Glue> {
+    BulkDependentResource<GenericKubernetesResource, Glue, String> {
 
   public GenericBulkDependentResource(GenericTemplateHandler genericTemplateHandler,
       String desiredTemplate, String name,
@@ -49,4 +49,11 @@ public class GenericBulkDependentResource extends
             r -> name.equals(r.getMetadata().getAnnotations().get(DEPENDENT_NAME_ANNOTATION_KEY)))
         .collect(Collectors.toMap(r -> r.getMetadata().getName(), r -> r));
   }
+
+  @Override
+  public void deleteTargetResource(Glue primary, GenericKubernetesResource resource, String key,
+      Context<Glue> context) {
+    context.getClient().resource(resource).delete();
+  }
+
 }
