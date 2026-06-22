@@ -18,7 +18,7 @@ import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.dsl.NonDeletingOperation;
 import io.fabric8.kubernetes.client.utils.Serialization;
-import io.javaoperatorsdk.operator.ReconcilerUtils;
+import io.javaoperatorsdk.operator.ReconcilerUtilsInternal;
 import io.javaoperatorsdk.operator.glue.customresource.glue.Glue;
 import io.javaoperatorsdk.operator.glue.customresource.operator.GlueOperator;
 
@@ -66,7 +66,7 @@ public class TestUtils {
 
   public static void applyCrd(Class<? extends HasMetadata> resourceClass, KubernetesClient client,
       boolean test) {
-    applyCrd(ReconcilerUtils.getResourceTypeName(resourceClass), client, test);
+    applyCrd(ReconcilerUtilsInternal.getResourceTypeName(resourceClass), client, test);
   }
 
   @SafeVarargs
