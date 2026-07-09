@@ -9,6 +9,19 @@ In other words, it also allows you to write **workflows** over resources in a **
 
 The project is implemented as a thin layer on top of battle-tested [workflow](https://javaoperatorsdk.io/docs/workflows/) and [dependent resources](https://javaoperatorsdk.io/docs/dependent-resources/) features of Java Operator SDK, using [Quarkus based](https://github.com/quarkiverse/quarkus-operator-sdk) version of the framework.
 
+## Installation
+
+Install with Helm from the chart repository:
+
+```bash
+helm repo add glue-operator https://java-operator-sdk.github.io/kubernetes-glue-operator
+helm repo update
+helm install glue-operator glue-operator/kubernetes-glue-operator \
+  --namespace glue-operator --create-namespace
+```
+
+See the [chart README](/helm/kubernetes-glue-operator/README.md) for configuration options.
+
 ## Documentation
 
 [Getting started](/docs/getting-started.md)
