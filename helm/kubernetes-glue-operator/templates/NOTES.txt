@@ -1,0 +1,21 @@
+{{ .Chart.Name }} {{ .Chart.AppVersion }} has been installed.
+
+Release: {{ .Release.Name }}
+Namespace: {{ .Release.Namespace }}
+Watching: {{ if .Values.watchNamespaces }}{{ join ", " .Values.watchNamespaces }}{{ else }}all namespaces{{ end }}
+
+Check the operator is running:
+
+  kubectl -n {{ .Release.Namespace }} rollout status deployment/{{ include "glue-operator.fullname" . }}
+
+The CRDs `glues.io.javaoperatorsdk.operator.glue` (g) and
+`glueoperators.io.javaoperatorsdk.operator.glue` (go) are installed. Try a Glue:
+
+  kubectl get glues,glueoperators -A
+
+See samples: https://github.com/java-operator-sdk/kubernetes-glue-operator/blob/main/docs/sample-index.md
+
+NOTE: Helm does not upgrade or delete CRDs in the chart's crds/ directory. When
+upgrading to a release with CRD schema changes, apply the new CRDs manually:
+
+  kubectl apply -f https://raw.githubusercontent.com/java-operator-sdk/kubernetes-glue-operator/{{ .Chart.AppVersion }}/helm/kubernetes-glue-operator/crds/
