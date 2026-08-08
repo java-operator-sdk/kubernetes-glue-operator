@@ -78,6 +78,10 @@ public class GenericTemplateHandler {
     return res;
   }
 
+  public static Map<?, ?> convertToValue(Object value) {
+    return objectMapper.convertValue(value, Map.class);
+  }
+
   @SuppressWarnings("unchecked")
   public static Map<String, ?> parseTemplateToMapObject(String template) {
     return Serialization.unmarshal(template, Map.class);
